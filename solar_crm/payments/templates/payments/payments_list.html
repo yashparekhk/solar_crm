@@ -69,20 +69,5 @@
         </a>
     </div>
 </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">
-                        <i class="fas fa-rupee-sign fa-2x mb-2 d-block opacity-25"></i>
-                        No payments yet.
-                        <a href="{% url 'payments_add_view' %}" style="color:var(--primary);">
-                            Add first payment
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+               
 {% endblock %}
