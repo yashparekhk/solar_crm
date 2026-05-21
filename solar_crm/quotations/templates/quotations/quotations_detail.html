@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}{{ quotation_instance.quotation_no }} — Quotation{% endblock %}
+{% block breadcrumb %}Quotations / {{ quotation_instance.quotation_no }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-file-lines me-2" style="color:var(--primary);"></i>
+            Quotation Details
+        </h4>
+        <small class="text-muted">{{ quotation_instance.quotation_no }}</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'quotations_edit_view' quotation_instance.pk %}"
+           class="btn btn-solar btn-sm"
+           style="background:#fffbeb;color:#92400e !important;border:1px solid #fde68a;">
+            <i class="fas fa-pen"></i> Edit
+        </a>
+        <a href="{% url 'quotations_list_view' %}"
+           class="btn btn-solar btn-sm"
+           style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="crm-card">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-file-lines"></i> Summary</h5>
+                <span class="status-badge status-{{ quotation_instance.status }}">
+                    {{ quotation_instance.get_status_display }}
+                </span>
+            </div>
+            <div class="crm-card-body" style="font-size:0.835rem;">
+                <div class="d-flex flex-column gap-2">
+                    {% for label, value in fields %}{% endfor %}
+                    <div style="display:flex;justify-content:space-between;padding:9px 12px;
+                                background:#f8fafc;border-radius:7px;">
+                        <span style="color:#94a3b8;font-weight:600;font-size:0.78rem;">Quote No.</span>
+                        <span style="font-weight:700;color:var(--secondary);">
+                            {{ quotation_instance.quotation_no }}
+                        </span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 12px;
+                                background:#f8fafc;border-radius:7px;">
+                        <span style="color:#94a3b8;font-weight:600;font-size:0.78rem;">Customer</span>
+                        <span style="color:var(--secondary);">{{ quotation_instance.customer.name }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 12px;
+                                background:#f8fafc;border-radius:7px;">
+                        <span style="color:#94a3b8;font-weight:600;font-size:0.78rem;">System Size</span>
+                        <span style="color:var(--secondary);">{{ quotation_instance.system_size }} kW</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 12px;
+                                background:#eff6ff;border-radius:7px;border:1px solid #bfdbfe;">
+                        <span style="color:#2563eb;font-weight:700;font-size:0.78rem;">Total Amount</span>
+                        <span style="color:#2563eb;font-weight:800;font-size:1rem;">
+                            ₹{{ quotation_instance.total_amount }}
+                        </span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 12px;
+                                background:#f8fafc;border-radius:7px;">
+                        <span style="color:#94a3b8;font-weight:600;font-size:0.78rem;">Created On</span>
+                        <span style="color:var(--secondary);">
+                            {{ quotation_instance.created_at|date:"d M Y" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="crm-card mb-3">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-building-user"></i> Customer Information</h5>
+            </div>
+            <div class="crm-card-body" style="font-size:0.835rem;">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;margin-bottom:4px;">Name</div>
+                        <div style="font-weight:600;">{{ quotation_instance.customer.name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;margin-bottom:4px;">Phone</div>
+                        <div>{{ quotation_instance.customer.phone }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;margin-bottom:4px;">Email</div>
+                        <div>{{ quotation_instance.customer.email|default:"—" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;margin-bottom:4px;">City</div>
+                        <div>{{ quotation_instance.customer.city }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if quotation_instance.notes %}
+        <div class="crm-card">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-note-sticky"></i> Notes</h5>
+            </div>
+            <div class="crm-card-body">
+                <p style="font-size:0.855rem;color:#374151;margin:0;line-height:1.7;white-space:pre-wrap;">
+                    {{ quotation_instance.notes }}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

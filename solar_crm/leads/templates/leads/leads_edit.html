@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Edit Lead — Solar CRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">✏️ Edit Lead</h4>
+        <small class="text-muted">Update lead information</small>
+    </div>
+    <a href="{% url 'leads_list_view' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <h5><i class="fas fa-user-plus me-2" style="color:var(--primary);"></i>
+            Editing: {{ lead_instance.name }}
+        </h5>
+    </div>
+    <div class="crm-card-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" name="name" class="form-control"
+                           value="{{ lead_instance.name }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Phone *</label>
+                    <input type="text" name="phone" class="form-control"
+                           value="{{ lead_instance.phone }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control"
+                           value="{{ lead_instance.email }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Source</label>
+                    <select name="source" class="form-select">
+                        {% for value, label in source_choices %}
+                        <option value="{{ value }}"
+                            {% if lead_instance.source == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}"
+                            {% if lead_instance.status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Address</label>
+                    <input type="text" name="address" class="form-control"
+                           value="{{ lead_instance.address }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Notes</label>
+                    <textarea name="notes" class="form-control"
+                              rows="2">{{ lead_instance.notes }}</textarea>
+                </div>
+                <div class="col-12 d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-solar px-4">
+                        <i class="fas fa-save me-1"></i> Update Lead
+                    </button>
+                    <a href="{% url 'leads_list_view' %}"
+                       class="btn btn-outline-secondary px-4">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

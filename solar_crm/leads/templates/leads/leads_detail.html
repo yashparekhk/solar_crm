@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% block title %}{{ lead_instance.name }} — Lead Detail{% endblock %}
+{% block breadcrumb %}Leads / {{ lead_instance.name }}{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-filter me-2" style="color:var(--primary);font-size:1rem;"></i>
+            Lead Details
+        </h4>
+        <small class="text-muted">Viewing full information for this lead</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'leads_edit_view' lead_instance.pk %}"
+           class="btn btn-solar btn-sm"
+           style="background:#fffbeb;color:#92400e !important;border:1px solid #fde68a;">
+            <i class="fas fa-pen"></i> Edit
+        </a>
+        <a href="{% url 'leads_convert_view' lead_instance.pk %}"
+           class="btn btn-solar btn-sm"
+           style="background:#f0fdf4;color:#15803d !important;border:1px solid #bbf7d0;">
+            <i class="fas fa-user-check"></i> Convert to Customer
+        </a>
+        <a href="{% url 'leads_list_view' %}"
+           class="btn btn-solar btn-sm"
+           style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Left — Lead Profile Card -->
+    <div class="col-lg-4">
+        <div class="crm-card">
+            <div class="crm-card-body text-center py-4">
+
+                <!-- Avatar -->
+                <div style="
+                    width:70px;height:70px;
+                    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+                    border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 14px;
+                    font-size:1.5rem;font-weight:700;color:white;
+                    letter-spacing:1px;">
+                    {{ lead_instance.name|first|upper }}
+                </div>
+
+                <h5 class="fw-bold mb-1" style="color:var(--secondary);">
+                    {{ lead_instance.name }}
+                </h5>
+
+                <span class="status-badge status-{{ lead_instance.status }} mb-3 d-inline-block">
+                    {{ lead_instance.get_status_display }}
+                </span>
+
+                <div class="mt-3 text-start" style="font-size:0.82rem;">
+                    <div class="d-flex align-items-center gap-2 mb-2 p-2"
+                         style="background:#f8fafc;border-radius:7px;">
+                        <i class="fas fa-phone" style="color:#2563eb;width:16px;"></i>
+                        <span style="color:#374151;">{{ lead_instance.phone }}</span>
+                    </div>
+                    {% if lead_instance.email %}
+                    <div class="d-flex align-items-center gap-2 mb-2 p-2"
+                         style="background:#f8fafc;border-radius:7px;">
+                        <i class="fas fa-envelope" style="color:#2563eb;width:16px;"></i>
+                        <span style="color:#374151;word-break:break-all;">{{ lead_instance.email }}</span>
+                    </div>
+                    {% endif %}
+                    {% if lead_instance.address %}
+                    <div class="d-flex align-items-center gap-2 mb-2 p-2"
+                         style="background:#f8fafc;border-radius:7px;">
+                        <i class="fas fa-location-dot" style="color:#2563eb;width:16px;"></i>
+                        <span style="color:#374151;">{{ lead_instance.address }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex align-items-center gap-2 mb-2 p-2"
+                         style="background:#f8fafc;border-radius:7px;">
+                        <i class="fas fa-bullhorn" style="color:#2563eb;width:16px;"></i>
+                        <span style="color:#374151;">Source: {{ lead_instance.source|default:"Not specified" }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 p-2"
+                         style="background:#f8fafc;border-radius:7px;">
+                        <i class="fas fa-calendar" style="color:#2563eb;width:16px;"></i>
+                        <span style="color:#374151;">Added: {{ lead_instance.created_at|date:"d M Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Status Update -->
+        <div class="crm-card mt-3">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-sliders"></i> Update Status</h5>
+            </div>
+            <div class="crm-card-body">
+                <form method="POST" action="{% url 'leads_edit_view' lead_instance.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="name"    value="{{ lead_instance.name }}">
+                    <input type="hidden" name="phone"   value="{{ lead_instance.phone }}">
+                    <input type="hidden" name="email"   value="{{ lead_instance.email }}">
+                    <input type="hidden" name="address" value="{{ lead_instance.address }}">
+                    <input type="hidden" name="source"  value="{{ lead_instance.source }}">
+                    <input type="hidden" name="notes"   value="{{ lead_instance.notes }}">
+                    <select name="status" class="form-select form-select-sm mb-2">
+                        <option value="new"       {% if lead_instance.status == 'new' %}selected{% endif %}>New</option>
+                        <option value="contacted" {% if lead_instance.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                        <option value="qualified" {% if lead_instance.status == 'qualified' %}selected{% endif %}>Qualified</option>
+                        <option value="lost"      {% if lead_instance.status == 'lost' %}selected{% endif %}>Lost</option>
+                    </select>
+                    <button type="submit" class="btn btn-solar btn-sm w-100">
+                        <i class="fas fa-check me-1"></i> Update Status
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right — Full Details -->
+    <div class="col-lg-8">
+
+        <!-- Lead Info Card -->
+        <div class="crm-card mb-3">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-circle-info"></i> Lead Information</h5>
+                <span style="font-size:0.75rem;color:#94a3b8;">
+                    Last updated: {{ lead_instance.updated_at|date:"d M Y, h:i A" }}
+                </span>
+            </div>
+            <div class="crm-card-body">
+                <div class="row g-3" style="font-size:0.855rem;">
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+                            Full Name
+                        </div>
+                        <div style="color:var(--secondary);font-weight:600;">
+                            {{ lead_instance.name }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+                            Phone Number
+                        </div>
+                        <div style="color:var(--secondary);">{{ lead_instance.phone }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+                            Email Address
+                        </div>
+                        <div style="color:var(--secondary);">
+                            {{ lead_instance.email|default:"Not provided" }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+                            Lead Source
+                        </div>
+                        <div style="color:var(--secondary);">
+                            {{ lead_instance.source|default:"Not specified" }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+                            Current Status
+                        </div>
+                        <span class="status-badge status-{{ lead_instance.status }}">
+                            {{ lead_instance.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+                            Created On
+                        </div>
+                        <div style="color:var(--secondary);">
+                            {{ lead_instance.created_at|date:"d M Y, h:i A" }}
+                        </div>
+                    </div>
+                    {% if lead_instance.address %}
+                    <div class="col-12">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+                            Address
+                        </div>
+                        <div style="color:var(--secondary);">{{ lead_instance.address }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Card -->
+        <div class="crm-card mb-3">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-note-sticky"></i> Notes</h5>
+            </div>
+            <div class="crm-card-body">
+                {% if lead_instance.notes %}
+                <p style="font-size:0.855rem;color:#374151;line-height:1.7;margin:0;
+                           white-space:pre-wrap;">{{ lead_instance.notes }}</p>
+                {% else %}
+                <p style="font-size:0.82rem;color:#94a3b8;margin:0;">
+                    No notes added yet.
+                    <a href="{% url 'leads_edit_view' lead_instance.pk %}"
+                       style="color:var(--primary);">Add a note</a>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Convert to Customer CTA -->
+        {% if lead_instance.status != 'lost' %}
+        <div class="crm-card"
+             style="border:1px solid #bbf7d0;background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
+            <div class="crm-card-body">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <div style="font-weight:700;color:#15803d;font-size:0.9rem;margin-bottom:3px;">
+                            <i class="fas fa-user-check me-2"></i>Ready to Convert?
+                        </div>
+                        <div style="font-size:0.8rem;color:#166534;">
+                            If this lead is qualified, convert them to a customer to track
+                            installations and payments.
+                        </div>
+                    </div>
+                    <a href="{% url 'leads_convert_view' lead_instance.pk %}"
+                       class="btn btn-solar btn-sm"
+                       style="background:#15803d;white-space:nowrap;">
+                        <i class="fas fa-user-check me-1"></i> Convert to Customer
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

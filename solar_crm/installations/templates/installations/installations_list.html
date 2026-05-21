@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Installations — Solar CRM{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+    <i class="fas fa-screwdriver-wrench me-2" style="color:var(--primary);"></i>Installations
+</h4>
+        <small class="text-muted">{{ total_count }} total installations</small>
+    </div>
+    <a href="{% url 'installations_add_view' %}" class="btn btn-solar btn-sm">
+        <i class="fas fa-plus"></i> New Installation
+    </a>
+</div>
+
+<div class="crm-card">
+    <div class="table-responsive">
+        <table class="crm-table" style="font-size:0.82rem;">
+            <thead>
+                <tr>
+                    <th style="padding:8px 12px;">#</th>
+                    <th style="padding:8px 12px;">Customer</th>
+                    <th style="padding:8px 12px;">System Size</th>
+                    <th style="padding:8px 12px;">Technician</th>
+                    <th style="padding:8px 12px;">Start Date</th>
+                    <th style="padding:8px 12px;">End Date</th>
+                    <th style="padding:8px 12px;">Status</th>
+                    <th style="padding:8px 12px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for installation in installations_list %}
+                <tr>
+                    <td style="padding:7px 12px;">{{ forloop.counter }}</td>
+                    <td style="padding:7px 12px;"><strong>{{ installation.customer.name }}</strong></td>
+                    <td style="padding:7px 12px;">{{ installation.system_size }} kW</td>
+                    <td style="padding:7px 12px;">{{ installation.technician|default:"—" }}</td>
+                    <td style="padding:7px 12px;" class="text-muted">
+                        {{ installation.start_date|date:"d M Y" }}
+                    </td>
+                    <td style="padding:7px 12px;" class="text-muted">
+                        {{ installation.end_date|date:"d M Y"|default:"—" }}
+                    </td>
+                    <td style="padding:7px 12px;">
+                        <span class="status-badge status-{{ installation.status }}"
+                              style="padding:2px 8px;font-size:0.68rem;">
+                            {{ installation.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="padding:8px 14px;">
+    <div class="d-flex gap-1">
+        <a href="{% url 'installations_detail_view' installation.pk %}"
+           class="btn btn-sm"
+           style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
+           title="View">
+            <i class="fas fa-eye" style="font-size:0.72rem;"></i>
+        </a>
+        <a href="{% url 'installations_edit_view' installation.pk %}"
+           class="btn btn-sm btn-warning"
+           style="padding:3px 8px;" title="Edit">
+            <i class="fas fa-pen" style="font-size:0.72rem;"></i>
+        </a>
+        <a href="{% url 'installations_delete_view' installation.pk %}"
+           class="btn btn-sm btn-danger"
+           style="padding:3px 8px;" title="Delete">
+            <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+        </a>
+    </div>
+</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        <i class="fas fa-tools fa-2x mb-2 d-block opacity-25"></i>
+                        No installations yet.
+                        <a href="{% url 'installations_add_view' %}" style="color:var(--primary);">
+                            Add first installation
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

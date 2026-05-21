@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Payments — Solar CRM{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+    <i class="fas fa-indian-rupee-sign me-2" style="color:var(--primary);"></i>Payments
+</h4>
+        <small class="text-muted">{{ total_count }} total payments</small>
+    </div>
+    <a href="{% url 'payments_add_view' %}" class="btn btn-solar btn-sm">
+        <i class="fas fa-plus"></i> Add Payment
+    </a>
+</div>
+
+<div class="crm-card">
+    <div class="table-responsive">
+        <table class="crm-table" style="font-size:0.82rem;">
+            <thead>
+                <tr>
+                    <th style="padding:8px 12px;">#</th>
+                    <th style="padding:8px 12px;">Customer</th>
+                    <th style="padding:8px 12px;">Amount</th>
+                    <th style="padding:8px 12px;">Method</th>
+                    <th style="padding:8px 12px;">Payment Date</th>
+                    <th style="padding:8px 12px;">Status</th>
+                    <th style="padding:8px 12px;">Created</th>
+                    <th style="padding:8px 12px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments_list %}
+                <tr>
+                    <td style="padding:7px 12px;">{{ forloop.counter }}</td>
+                    <td style="padding:7px 12px;"><strong>{{ payment.customer.name }}</strong></td>
+                    <td style="padding:7px 12px;">₹{{ payment.amount }}</td>
+                    <td style="padding:7px 12px;">{{ payment.get_method_display|default:"—" }}</td>
+                    <td style="padding:7px 12px;" class="text-muted">
+                        {{ payment.payment_date|date:"d M Y"|default:"—" }}
+                    </td>
+                    <td style="padding:7px 12px;">
+                        <span class="status-badge status-{{ payment.status }}"
+                              style="padding:2px 8px;font-size:0.68rem;">
+                            {{ payment.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="padding:7px 12px;" class="text-muted">
+                        {{ payment.created_at|date:"d M Y" }}
+                    </td>
+                  <td style="padding:8px 14px;">
+    <div class="d-flex gap-1">
+        <a href="{% url 'payments_detail_view' payment.pk %}"
+           class="btn btn-sm"
+           style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
+           title="View">
+            <i class="fas fa-eye" style="font-size:0.72rem;"></i>
+        </a>
+        <a href="{% url 'payments_edit_view' payment.pk %}"
+           class="btn btn-sm btn-warning"
+           style="padding:3px 8px;" title="Edit">
+            <i class="fas fa-pen" style="font-size:0.72rem;"></i>
+        </a>
+        <a href="{% url 'payments_delete_view' payment.pk %}"
+           class="btn btn-sm btn-danger"
+           style="padding:3px 8px;" title="Delete">
+            <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+        </a>
+    </div>
+</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        <i class="fas fa-rupee-sign fa-2x mb-2 d-block opacity-25"></i>
+                        No payments yet.
+                        <a href="{% url 'payments_add_view' %}" style="color:var(--primary);">
+                            Add first payment
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

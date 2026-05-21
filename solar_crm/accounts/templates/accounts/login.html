@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Login — Solar CRM{% endblock %}
+
+{% block auth_content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <i class="fas fa-solar-panel"></i>
+            <h2>Solar CRM</h2>
+            <p>Sign in to your account</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-user me-1"></i> Username
+                </label>
+                {{ login_form.username }}
+                {% if login_form.username.errors %}
+                <div class="text-danger small mt-1">{{ login_form.username.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-2">
+                <label class="form-label">
+                    <i class="fas fa-lock me-1"></i> Password
+                </label>
+                {{ login_form.password }}
+                {% if login_form.password.errors %}
+                <div class="text-danger small mt-1">{{ login_form.password.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Forgot Password Link -->
+            <div class="text-end mb-4">
+                <a href="{% url 'forgot_password_view' %}"
+                   style="color:var(--primary); font-size:0.85rem; font-weight:600;">
+                    <i class="fas fa-key me-1"></i> Forgot Password?
+                </a>
+            </div>
+
+            <button type="submit" class="btn-auth">
+                <i class="fas fa-sign-in-alt me-2"></i> Sign In
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            {% if not user_exists %}
+            <p class="text-muted small">
+                First time?
+                <a href="{% url 'register_view' %}" style="color:var(--primary); font-weight:600;">
+                    Create Account
+                </a>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

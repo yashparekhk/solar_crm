@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}{{ customer_instance.name }} — Customer{% endblock %}
+{% block breadcrumb %}Customers / {{ customer_instance.name }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-building-user me-2" style="color:var(--primary);"></i>
+            Customer Profile
+        </h4>
+        <small class="text-muted">Full details and activity history</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'customers_edit_view' customer_instance.pk %}"
+           class="btn btn-solar btn-sm"
+           style="background:#fffbeb;color:#92400e !important;border:1px solid #fde68a;">
+            <i class="fas fa-pen"></i> Edit
+        </a>
+        <a href="{% url 'customers_list_view' %}"
+           class="btn btn-solar btn-sm"
+           style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Profile Card -->
+    <div class="col-lg-4">
+        <div class="crm-card">
+            <div class="crm-card-body text-center py-4">
+                <div style="width:70px;height:70px;
+                            background:linear-gradient(135deg,#2563eb,#1d4ed8);
+                            border-radius:50%;display:flex;align-items:center;
+                            justify-content:center;margin:0 auto 14px;
+                            font-size:1.5rem;font-weight:700;color:white;">
+                    {{ customer_instance.name|first|upper }}
+                </div>
+                <h5 class="fw-bold mb-1">{{ customer_instance.name }}</h5>
+                <span style="font-size:0.78rem;color:#64748b;">{{ customer_instance.city }}</span>
+
+                <div class="mt-3 text-start" style="font-size:0.82rem;">
+                    <div class="d-flex align-items-center gap-2 mb-2 p-2"
+                         style="background:#f8fafc;border-radius:7px;">
+                        <i class="fas fa-phone" style="color:#2563eb;width:16px;"></i>
+                        <span>{{ customer_instance.phone }}</span>
+                    </div>
+                    {% if customer_instance.email %}
+                    <div class="d-flex align-items-center gap-2 mb-2 p-2"
+                         style="background:#f8fafc;border-radius:7px;">
+                        <i class="fas fa-envelope" style="color:#2563eb;width:16px;"></i>
+                        <span style="word-break:break-all;">{{ customer_instance.email }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex align-items-center gap-2 mb-2 p-2"
+                         style="background:#f8fafc;border-radius:7px;">
+                        <i class="fas fa-solar-panel" style="color:#2563eb;width:16px;"></i>
+                        <span>{{ customer_instance.system_size }} kW System</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 p-2"
+                         style="background:#f8fafc;border-radius:7px;">
+                        <i class="fas fa-location-dot" style="color:#2563eb;width:16px;"></i>
+                        <span>{{ customer_instance.address|default:"Not provided" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity -->
+    <div class="col-lg-8">
+        <!-- Quotations -->
+        <div class="crm-card mb-3">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-file-lines"></i> Quotations</h5>
+                <a href="{% url 'quotations_add_view' %}" class="btn btn-solar btn-sm"
+                   style="padding:4px 10px;font-size:0.75rem;">+ Add</a>
+            </div>
+            <div class="table-responsive">
+                <table class="crm-table" style="font-size:0.8rem;">
+                    <thead>
+                        <tr>
+                            <th style="padding:8px 14px;">Quote No.</th>
+                            <th style="padding:8px 14px;">System</th>
+                            <th style="padding:8px 14px;">Amount</th>
+                            <th style="padding:8px 14px;">Status</th>
+                            <th style="padding:8px 14px;">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for q in customer_quotations %}
+                        <tr>
+                            <td style="padding:7px 14px;"><strong>{{ q.quotation_no }}</strong></td>
+                            <td style="padding:7px 14px;">{{ q.system_size }} kW</td>
+                            <td style="padding:7px 14px;">₹{{ q.total_amount }}</td>
+                            <td style="padding:7px 14px;">
+                                <span class="status-badge status-{{ q.status }}" style="font-size:0.68rem;">
+                                    {{ q.get_status_display }}
+                                </span>
+                            </td>
+                            <td style="padding:7px 14px;color:#94a3b8;">{{ q.created_at|date:"d M Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-3" style="color:#94a3b8;font-size:0.8rem;">No quotations yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Installations -->
+        <div class="crm-card mb-3">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-screwdriver-wrench"></i> Installations</h5>
+                <a href="{% url 'installations_add_view' %}" class="btn btn-solar btn-sm"
+                   style="padding:4px 10px;font-size:0.75rem;">+ Add</a>
+            </div>
+            <div class="table-responsive">
+                <table class="crm-table" style="font-size:0.8rem;">
+                    <thead>
+                        <tr>
+                            <th style="padding:8px 14px;">System Size</th>
+                            <th style="padding:8px 14px;">Technician</th>
+                            <th style="padding:8px 14px;">Start Date</th>
+                            <th style="padding:8px 14px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inst in customer_installations %}
+                        <tr>
+                            <td style="padding:7px 14px;">{{ inst.system_size }} kW</td>
+                            <td style="padding:7px 14px;">{{ inst.technician|default:"—" }}</td>
+                            <td style="padding:7px 14px;color:#94a3b8;">{{ inst.start_date|date:"d M Y" }}</td>
+                            <td style="padding:7px 14px;">
+                                <span class="status-badge status-{{ inst.status }}" style="font-size:0.68rem;">
+                                    {{ inst.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center py-3" style="color:#94a3b8;font-size:0.8rem;">No installations yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payments -->
+        <div class="crm-card">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-indian-rupee-sign"></i> Payments</h5>
+                <a href="{% url 'payments_add_view' %}" class="btn btn-solar btn-sm"
+                   style="padding:4px 10px;font-size:0.75rem;">+ Add</a>
+            </div>
+            <div class="table-responsive">
+                <table class="crm-table" style="font-size:0.8rem;">
+                    <thead>
+                        <tr>
+                            <th style="padding:8px 14px;">Amount</th>
+                            <th style="padding:8px 14px;">Method</th>
+                            <th style="padding:8px 14px;">Date</th>
+                            <th style="padding:8px 14px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pay in customer_payments %}
+                        <tr>
+                            <td style="padding:7px 14px;font-weight:600;">₹{{ pay.amount }}</td>
+                            <td style="padding:7px 14px;">{{ pay.get_method_display|default:"—" }}</td>
+                            <td style="padding:7px 14px;color:#94a3b8;">{{ pay.payment_date|date:"d M Y"|default:"—" }}</td>
+                            <td style="padding:7px 14px;">
+                                <span class="status-badge status-{{ pay.status }}" style="font-size:0.68rem;">
+                                    {{ pay.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center py-3" style="color:#94a3b8;font-size:0.8rem;">No payments yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

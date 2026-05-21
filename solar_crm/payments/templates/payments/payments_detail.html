@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Payment — {{ payment_instance.customer.name }}{% endblock %}
+{% block breadcrumb %}Payments / {{ payment_instance.customer.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-indian-rupee-sign me-2" style="color:var(--primary);"></i>
+            Payment Details
+        </h4>
+        <small class="text-muted">{{ payment_instance.customer.name }}</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'payments_edit_view' payment_instance.pk %}"
+           class="btn btn-solar btn-sm"
+           style="background:#fffbeb;color:#92400e !important;border:1px solid #fde68a;">
+            <i class="fas fa-pen"></i> Edit
+        </a>
+        <a href="{% url 'payments_list_view' %}"
+           class="btn btn-solar btn-sm"
+           style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="crm-card">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-indian-rupee-sign"></i> Payment Info</h5>
+                <span class="status-badge status-{{ payment_instance.status }}">
+                    {{ payment_instance.get_status_display }}
+                </span>
+            </div>
+            <div class="crm-card-body">
+                <div class="text-center mb-3 p-3"
+                     style="background:#eff6ff;border-radius:10px;border:1px solid #bfdbfe;">
+                    <div style="font-size:0.75rem;color:#2563eb;font-weight:700;
+                                text-transform:uppercase;margin-bottom:4px;">Total Amount</div>
+                    <div style="font-size:2rem;font-weight:800;color:#2563eb;letter-spacing:-1px;">
+                        ₹{{ payment_instance.amount }}
+                    </div>
+                </div>
+                <div class="d-flex flex-column gap-2" style="font-size:0.835rem;">
+                    <div style="display:flex;justify-content:space-between;padding:9px 12px;
+                                background:#f8fafc;border-radius:7px;">
+                        <span style="color:#94a3b8;font-weight:600;font-size:0.78rem;">Customer</span>
+                        <span style="font-weight:600;">{{ payment_instance.customer.name }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 12px;
+                                background:#f8fafc;border-radius:7px;">
+                        <span style="color:#94a3b8;font-weight:600;font-size:0.78rem;">Method</span>
+                        <span>{{ payment_instance.get_method_display|default:"Not specified" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 12px;
+                                background:#f8fafc;border-radius:7px;">
+                        <span style="color:#94a3b8;font-weight:600;font-size:0.78rem;">Payment Date</span>
+                        <span>{{ payment_instance.payment_date|date:"d M Y"|default:"Not set" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 12px;
+                                background:#f8fafc;border-radius:7px;">
+                        <span style="color:#94a3b8;font-weight:600;font-size:0.78rem;">Recorded On</span>
+                        <span>{{ payment_instance.created_at|date:"d M Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="crm-card mb-3">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-building-user"></i> Customer Information</h5>
+            </div>
+            <div class="crm-card-body" style="font-size:0.835rem;">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;margin-bottom:4px;">Name</div>
+                        <div style="font-weight:600;">{{ payment_instance.customer.name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;margin-bottom:4px;">Phone</div>
+                        <div>{{ payment_instance.customer.phone }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;margin-bottom:4px;">City</div>
+                        <div>{{ payment_instance.customer.city }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="color:#94a3b8;font-size:0.72rem;font-weight:700;
+                                    text-transform:uppercase;margin-bottom:4px;">System Size</div>
+                        <div>{{ payment_instance.customer.system_size }} kW</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if payment_instance.notes %}
+        <div class="crm-card">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-note-sticky"></i> Notes</h5>
+            </div>
+            <div class="crm-card-body">
+                <p style="font-size:0.855rem;color:#374151;margin:0;line-height:1.7;white-space:pre-wrap;">
+                    {{ payment_instance.notes }}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

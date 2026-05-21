@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% block title %}Import Leads — Solar CRM{% endblock %}
+{% block breadcrumb %}Import Leads{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">Import Leads</h4>
+        <p class="text-muted mb-0" style="font-size:0.82rem;">
+            Upload an Excel file to bulk import leads into Solar CRM
+        </p>
+    </div>
+    <a href="{% url 'leads_list_view' %}" class="btn btn-solar" style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+        <i class="fas fa-arrow-left"></i> Back to Leads
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4" style="font-size:0.855rem;">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-4">
+    <!-- Upload Card -->
+    <div class="col-lg-6">
+        <div class="crm-card h-100">
+            <div class="crm-card-header">
+                <h5>
+                    <i class="fas fa-arrow-down-to-bracket"></i>
+                    Upload Excel File
+                </h5>
+            </div>
+            <div class="crm-card-body">
+                <form method="POST" enctype="multipart/form-data" id="importForm">
+                    {% csrf_token %}
+
+                    <!-- Drop Zone -->
+                    <div id="dropZone" style="
+                        border: 2px dashed #e2e8f0;
+                        border-radius: 10px;
+                        padding: 36px 20px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        margin-bottom: 16px;
+                        background: #f8fafc;
+                    " onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-file-excel fa-2x mb-3" style="color:#10b981;opacity:0.6;"></i>
+                        <p class="fw-600 mb-1" style="color:#374151;font-size:0.9rem;">
+                            Click to select Excel file
+                        </p>
+                        <p class="text-muted mb-0" style="font-size:0.78rem;">
+                            Supports .xlsx format · Max 5MB
+                        </p>
+                        <div id="fileName" class="mt-2" style="font-size:0.82rem;color:var(--primary);display:none;font-weight:600;"></div>
+                    </div>
+
+                    <input type="file" name="excel_file" id="fileInput"
+                           accept=".xlsx,.xls" style="display:none;" required>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-solar flex-grow-1" id="importBtn">
+                            <i class="fas fa-arrow-down-to-bracket me-1"></i> Import Leads
+                        </button>
+                        <a href="{% url 'download_import_template' %}"
+                           class="btn btn-solar flex-grow-1"
+                           style="background:#f0fdf4;color:#15803d !important;border:1px solid #bbf7d0;">
+                            <i class="fas fa-download me-1"></i> Download Template
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions Card -->
+    <div class="col-lg-6">
+        <div class="crm-card h-100">
+            <div class="crm-card-header">
+                <h5>
+                    <i class="fas fa-circle-info"></i>
+                    How to Import
+                </h5>
+            </div>
+            <div class="crm-card-body">
+                <div class="d-flex flex-column gap-3">
+
+                    <div class="d-flex gap-3 align-items-start">
+                        <div style="width:28px;height:28px;background:#eff6ff;border-radius:50%;
+                                    display:flex;align-items:center;justify-content:center;
+                                    flex-shrink:0;">
+                            <span style="font-size:0.75rem;font-weight:700;color:#2563eb;">1</span>
+                        </div>
+                        <div>
+                            <div style="font-size:0.855rem;font-weight:600;color:#374151;">
+                                Download the Template
+                            </div>
+                            <div style="font-size:0.8rem;color:#64748b;margin-top:2px;">
+                                Click "Download Template" to get the correct Excel format with sample data.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 align-items-start">
+                        <div style="width:28px;height:28px;background:#eff6ff;border-radius:50%;
+                                    display:flex;align-items:center;justify-content:center;
+                                    flex-shrink:0;">
+                            <span style="font-size:0.75rem;font-weight:700;color:#2563eb;">2</span>
+                        </div>
+                        <div>
+                            <div style="font-size:0.855rem;font-weight:600;color:#374151;">
+                                Fill in Your Data
+                            </div>
+                            <div style="font-size:0.8rem;color:#64748b;margin-top:2px;">
+                                Add your leads from Row 2 onwards. <strong>Name</strong> and
+                                <strong>Phone</strong> are required. Other fields are optional.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 align-items-start">
+                        <div style="width:28px;height:28px;background:#eff6ff;border-radius:50%;
+                                    display:flex;align-items:center;justify-content:center;
+                                    flex-shrink:0;">
+                            <span style="font-size:0.75rem;font-weight:700;color:#2563eb;">3</span>
+                        </div>
+                        <div>
+                            <div style="font-size:0.855rem;font-weight:600;color:#374151;">
+                                Upload and Import
+                            </div>
+                            <div style="font-size:0.8rem;color:#64748b;margin-top:2px;">
+                                Select your file and click "Import Leads". The system will
+                                automatically read and import all valid rows.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 align-items-start">
+                        <div style="width:28px;height:28px;background:#f0fdf4;border-radius:50%;
+                                    display:flex;align-items:center;justify-content:center;
+                                    flex-shrink:0;">
+                            <i class="fas fa-check" style="font-size:0.7rem;color:#15803d;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:0.855rem;font-weight:600;color:#374151;">
+                                Valid Status Values
+                            </div>
+                            <div style="font-size:0.8rem;color:#64748b;margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
+                                <span class="status-badge status-new">new</span>
+                                <span class="status-badge status-contacted">contacted</span>
+                                <span class="status-badge status-qualified">qualified</span>
+                                <span class="status-badge status-lost">lost</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const fileInput  = document.getElementById('fileInput');
+const dropZone   = document.getElementById('dropZone');
+const fileNameEl = document.getElementById('fileName');
+
+fileInput?.addEventListener('change', function () {
+    if (this.files[0]) {
+        fileNameEl.textContent = this.files[0].name;
+        fileNameEl.style.display = 'block';
+        dropZone.style.borderColor = '#2563eb';
+        dropZone.style.background  = '#eff6ff';
+    }
+});
+
+dropZone?.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    this.style.borderColor = '#2563eb';
+    this.style.background  = '#eff6ff';
+});
+
+dropZone?.addEventListener('dragleave', function () {
+    this.style.borderColor = '#e2e8f0';
+    this.style.background  = '#f8fafc';
+});
+
+dropZone?.addEventListener('drop', function (e) {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        fileInput.files = e.dataTransfer.files;
+        fileNameEl.textContent = file.name;
+        fileNameEl.style.display = 'block';
+        this.style.borderColor = '#2563eb';
+        this.style.background  = '#eff6ff';
+    }
+});
+</script>
+{% endblock %}

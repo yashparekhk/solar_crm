@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Add Quotation — Solar CRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">➕ New Quotation</h4>
+        <small class="text-muted">Create a new quotation for a customer</small>
+    </div>
+    <a href="{% url 'quotations_list_view' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <h5><i class="fas fa-file-invoice me-2" style="color:var(--primary);"></i>Quotation Details</h5>
+    </div>
+    <div class="crm-card-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Customer *</label>
+                    <select name="customer" class="form-select" required>
+                        <option value="">Select customer</option>
+                        {% for customer in customers_list %}
+                        <option value="{{ customer.pk }}">{{ customer.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Quotation No. *</label>
+                    <input type="text" name="quotation_no" class="form-control"
+                           placeholder="e.g. QT-001" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">System Size (kW) *</label>
+                    <input type="number" name="system_size" class="form-control"
+                           placeholder="e.g. 5.5" step="0.01" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Total Amount (₹) *</label>
+                    <input type="number" name="total_amount" class="form-control"
+                           placeholder="e.g. 250000" step="0.01" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Notes</label>
+                    <input type="text" name="notes" class="form-control"
+                           placeholder="Any notes...">
+                </div>
+                <div class="col-12 d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-solar px-4">
+                        <i class="fas fa-save me-1"></i> Save Quotation
+                    </button>
+                    <a href="{% url 'quotations_list_view' %}"
+                       class="btn btn-outline-secondary px-4">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

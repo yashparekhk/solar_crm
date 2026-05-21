@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Leads — Solar CRM{% endblock %}
+{% block breadcrumb %}Leads{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-filter me-2" style="color:var(--primary);font-size:1rem;"></i>Leads
+        </h4>
+        <small class="text-muted">{{ total_count }} total leads in pipeline</small>
+    </div>
+    <a href="{% url 'leads_add_view' %}" class="btn btn-solar btn-sm">
+        <i class="fas fa-plus"></i> New Lead
+    </a>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="crm-card mb-3">
+    <div class="crm-card-body py-2">
+        <form method="GET">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-7">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-magnifying-glass text-muted" style="font-size:0.8rem;"></i>
+                        </span>
+                        <input type="text" name="q" value="{{ search_query }}"
+                            class="form-control border-start-0"
+                            placeholder="Search by name, phone, email...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Status</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-1">
+                    <button class="btn btn-solar btn-sm w-100" type="submit">Search</button>
+                    <a href="{% url 'leads_list_view' %}" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Leads Table -->
+<div class="crm-card">
+    <div class="table-responsive">
+        <table class="crm-table" style="font-size:0.82rem;">
+            <thead>
+                <tr>
+                    <th style="padding:9px 14px;">#</th>
+                    <th style="padding:9px 14px;">Name</th>
+                    <th style="padding:9px 14px;">Phone</th>
+                    <th style="padding:9px 14px;">Email</th>
+                    <th style="padding:9px 14px;">Source</th>
+                    <th style="padding:9px 14px;">Status</th>
+                    <th style="padding:9px 14px;">Date</th>
+                    <th style="padding:9px 14px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads_list %}
+                <tr>
+                    <td style="padding:8px 14px;color:#94a3b8;">{{ forloop.counter }}</td>
+                    <td style="padding:8px 14px;">
+                        <a href="{% url 'leads_detail_view' lead.pk %}"
+                           style="font-weight:600;color:var(--secondary);text-decoration:none;">
+                            {{ lead.name }}
+                        </a>
+                    </td>
+                    <td style="padding:8px 14px;color:#64748b;">{{ lead.phone }}</td>
+                    <td style="padding:8px 14px;color:#64748b;">{{ lead.email|default:"—" }}</td>
+                    <td style="padding:8px 14px;color:#64748b;">{{ lead.source|default:"—" }}</td>
+                    <td style="padding:8px 14px;">
+                        <span class="status-badge status-{{ lead.status }}"
+                              style="font-size:0.68rem;">
+                            {{ lead.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="padding:8px 14px;color:#94a3b8;font-size:0.78rem;">
+                        {{ lead.created_at|date:"d M Y" }}
+                    </td>
+                    <td style="padding:8px 14px;">
+                        <div class="d-flex gap-1">
+                            <!-- View -->
+                            <a href="{% url 'leads_detail_view' lead.pk %}"
+                               class="btn btn-sm"
+                               style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
+                               title="View Details">
+                                <i class="fas fa-eye" style="font-size:0.72rem;"></i>
+                            </a>
+                            <!-- Edit -->
+                            <a href="{% url 'leads_edit_view' lead.pk %}"
+                               class="btn btn-sm btn-warning"
+                               style="padding:3px 8px;"
+                               title="Edit Lead">
+                                <i class="fas fa-pen" style="font-size:0.72rem;"></i>
+                            </a>
+                            <!-- Convert to Customer -->
+                            <a href="{% url 'leads_convert_view' lead.pk %}"
+                               class="btn btn-sm"
+                               style="padding:3px 8px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;"
+                               title="Convert to Customer">
+                                <i class="fas fa-user-check" style="font-size:0.72rem;"></i>
+                            </a>
+                            <!-- Delete -->
+                            <a href="{% url 'leads_delete_view' lead.pk %}"
+                               class="btn btn-sm btn-danger"
+                               style="padding:3px 8px;"
+                               title="Delete Lead">
+                                <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5" style="color:#94a3b8;">
+                        <i class="fas fa-filter fa-2x mb-2 d-block" style="opacity:0.2;"></i>
+                        No leads found.
+                        <a href="{% url 'leads_add_view' %}" style="color:var(--primary);">
+                            Add your first lead
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

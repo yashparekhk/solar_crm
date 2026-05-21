@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Edit Installation — Solar CRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">✏️ Edit Installation</h4>
+        <small class="text-muted">Update installation details</small>
+    </div>
+    <a href="{% url 'installations_list_view' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <h5><i class="fas fa-tools me-2" style="color:var(--primary);"></i>
+            Editing: {{ installation_instance.customer.name }}
+        </h5>
+    </div>
+    <div class="crm-card-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Customer *</label>
+                    <select name="customer" class="form-select">
+                        {% for customer in customers_list %}
+                        <option value="{{ customer.pk }}"
+                            {% if customer.pk == installation_instance.customer.pk %}selected{% endif %}>
+                            {{ customer.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">System Size (kW)</label>
+                    <input type="number" name="system_size" class="form-control"
+                           value="{{ installation_instance.system_size }}" step="0.01">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Technician</label>
+                    <input type="text" name="technician" class="form-control"
+                           value="{{ installation_instance.technician }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" name="start_date" class="form-control"
+                           value="{{ installation_instance.start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">End Date</label>
+                    <input type="date" name="end_date" class="form-control"
+                           value="{{ installation_instance.end_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}"
+                            {% if installation_instance.status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Notes</label>
+                    <textarea name="notes" class="form-control"
+                              rows="2">{{ installation_instance.notes }}</textarea>
+                </div>
+                <div class="col-12 d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-solar px-4">
+                        <i class="fas fa-save me-1"></i> Update Installation
+                    </button>
+                    <a href="{% url 'installations_list_view' %}"
+                       class="btn btn-outline-secondary px-4">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Solar CRM{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ── QUICK ACTIONS — TOP OF PAGE ── -->
+<div class="quick-actions-bar mb-4">
+    <div class="quick-actions-label">Quick Actions</div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'leads_add_view' %}" class="qa-btn">
+            <i class="fas fa-filter"></i> New Lead
+        </a>
+        <a href="{% url 'customers_add_view' %}" class="qa-btn">
+            <i class="fas fa-building-user"></i> Add Customer
+        </a>
+        <a href="{% url 'quotations_add_view' %}" class="qa-btn">
+            <i class="fas fa-file-lines"></i> New Quote
+        </a>
+        <a href="{% url 'installations_add_view' %}" class="qa-btn">
+            <i class="fas fa-screwdriver-wrench"></i> Installation
+        </a>
+        <a href="{% url 'payments_add_view' %}" class="qa-btn">
+            <i class="fas fa-indian-rupee-sign"></i> Add Payment
+        </a>
+        <a href="{% url 'tickets_add_view' %}" class="qa-btn">
+            <i class="fas fa-circle-question"></i> New Ticket
+        </a>
+    </div>
+</div>
+
+<!-- ── STAT CARDS ── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">Leads</div>
+                    <div class="stat-number">{{ total_leads }}</div>
+                    <div class="stat-change up">
+                        <i class="fas fa-arrow-trend-up me-1"></i>Pipeline
+                    </div>
+                </div>
+                <div class="stat-icon" style="background:#eff6ff;">
+                    <i class="fas fa-filter" style="color:#2563eb;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">Customers</div>
+                    <div class="stat-number">{{ total_customers }}</div>
+                    <div class="stat-change up">
+                        <i class="fas fa-arrow-trend-up me-1"></i>Active
+                    </div>
+                </div>
+                <div class="stat-icon" style="background:#f0fdf4;">
+                    <i class="fas fa-building-user" style="color:#15803d;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">Quotations</div>
+                    <div class="stat-number">{{ total_quotations }}</div>
+                    <div class="stat-change up">
+                        <i class="fas fa-file-lines me-1"></i>Sent
+                    </div>
+                </div>
+                <div class="stat-icon" style="background:#fffbeb;">
+                    <i class="fas fa-file-lines" style="color:#d97706;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">Installations</div>
+                    <div class="stat-number">{{ total_installations }}</div>
+                    <div class="stat-change up">
+                        <i class="fas fa-screwdriver-wrench me-1"></i>Active
+                    </div>
+                </div>
+                <div class="stat-icon" style="background:#faf5ff;">
+                    <i class="fas fa-screwdriver-wrench" style="color:#7c3aed;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">Pending Bills</div>
+                    <div class="stat-number">{{ pending_payments }}</div>
+                    <div class="stat-change down">
+                        <i class="fas fa-clock me-1"></i>Due
+                    </div>
+                </div>
+                <div class="stat-icon" style="background:#fef2f2;">
+                    <i class="fas fa-indian-rupee-sign" style="color:#dc2626;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">Revenue</div>
+                    <div class="stat-number" style="font-size:1.3rem;">₹{{ total_revenue }}</div>
+                    <div class="stat-change up">
+                        <i class="fas fa-arrow-trend-up me-1"></i>Collected
+                    </div>
+                </div>
+                <div class="stat-icon" style="background:#f0fdf4;">
+                    <i class="fas fa-sack-dollar" style="color:#15803d;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ── LEADS OVERVIEW CHART ── -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-5">
+        <div class="crm-card h-100">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-chart-pie"></i> Leads Overview</h5>
+            </div>
+            <div class="d-flex align-items-center justify-content-center gap-4 p-3">
+                <div style="width:180px; height:180px; position:relative; flex-shrink:0;">
+                    <canvas id="leadsDonut"></canvas>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:10px;height:10px;border-radius:50%;background:#2563eb;display:inline-block;"></span>
+                        <span style="font-size:0.82rem;color:#64748b;">New</span>
+                        <strong style="margin-left:auto;padding-left:16px;">{{ leads_new }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+                        <span style="font-size:0.82rem;color:#64748b;">Contacted</span>
+                        <strong style="margin-left:auto;padding-left:16px;">{{ leads_contacted }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+                        <span style="font-size:0.82rem;color:#64748b;">Qualified</span>
+                        <strong style="margin-left:auto;padding-left:16px;">{{ leads_qualified }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:10px;height:10px;border-radius:50%;background:#a855f7;display:inline-block;"></span>
+                        <span style="font-size:0.82rem;color:#64748b;">Proposal</span>
+                        <strong style="margin-left:auto;padding-left:16px;">{{ leads_proposal }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
+                        <span style="font-size:0.82rem;color:#64748b;">Won</span>
+                        <strong style="margin-left:auto;padding-left:16px;">{{ leads_won }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── RECENT TABLES ── -->
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="crm-card">
+            <div class="crm-card-header">
+                <h5>
+                    <i class="fas fa-filter"></i>
+                    Recent Leads
+                </h5>
+                <a href="{% url 'leads_list_view' %}" class="btn btn-solar btn-sm"
+                   style="padding:5px 12px;font-size:0.775rem;">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lead in recent_leads %}
+                        <tr>
+                            <td><strong>{{ lead.name }}</strong></td>
+                            <td style="color:#64748b;">{{ lead.phone }}</td>
+                            <td>
+                                <span class="status-badge status-{{ lead.status }}">
+                                    {{ lead.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4" style="color:#94a3b8;font-size:0.82rem;">
+                                No leads yet —
+                                <a href="{% url 'leads_add_view' %}" style="color:var(--primary);">add your first</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="crm-card">
+            <div class="crm-card-header">
+                <h5>
+                    <i class="fas fa-building-user"></i>
+                    Recent Customers
+                </h5>
+                <a href="{% url 'customers_list_view' %}" class="btn btn-solar btn-sm"
+                   style="padding:5px 12px;font-size:0.775rem;">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>City</th>
+                            <th>System</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in recent_customers %}
+                        <tr>
+                            <td><strong>{{ customer.name }}</strong></td>
+                            <td style="color:#64748b;">{{ customer.city }}</td>
+                            <td style="color:#64748b;">{{ customer.system_size }} kW</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4" style="color:#94a3b8;font-size:0.82rem;">
+                                No customers yet —
+                                <a href="{% url 'customers_add_view' %}" style="color:var(--primary);">add first</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function () {
+
+    const ctx = document.getElementById('leadsDonut');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['New', 'Contacted', 'Qualified', 'Proposal', 'Won'],
+                datasets: [{
+                    data: [
+                        {{ leads_new }},
+                        {{ leads_contacted }},
+                        {{ leads_qualified }},
+                        {{ leads_proposal }},
+                        {{ leads_won }}
+                    ],
+                    backgroundColor: ['#2563eb','#22c55e','#f59e0b','#a855f7','#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#94a3b8',
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

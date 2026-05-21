@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Register — Solar CRM{% endblock %}
+
+{% block auth_content %}
+<div class="auth-wrapper" style="padding: 40px 15px;">
+    <div class="auth-card" style="max-width:580px;">
+        <div class="auth-logo">
+            <i class="fas fa-solar-panel"></i>
+            <h2>Solar CRM</h2>
+            <p>Create your account</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">First Name *</label>
+                    {{ registration_form.first_name }}
+                    {% if registration_form.first_name.errors %}
+                    <div class="text-danger small mt-1">{{ registration_form.first_name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last Name *</label>
+                    {{ registration_form.last_name }}
+                    {% if registration_form.last_name.errors %}
+                    <div class="text-danger small mt-1">{{ registration_form.last_name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Username *</label>
+                    {{ registration_form.username }}
+                    {% if registration_form.username.errors %}
+                    <div class="text-danger small mt-1">{{ registration_form.username.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Role *</label>
+                    {{ registration_form.role }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email *</label>
+                    {{ registration_form.email }}
+                    {% if registration_form.email.errors %}
+                    <div class="text-danger small mt-1">{{ registration_form.email.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone</label>
+                    {{ registration_form.phone }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Password *</label>
+                    {{ registration_form.password_input }}
+                    {% if registration_form.password_input.errors %}
+                    <div class="text-danger small mt-1">{{ registration_form.password_input.errors }}</div>
+                    {% endif %}
+                    <div class="password-hint mt-1">
+                        Max 15 chars • 1 Uppercase • 1 Lowercase • 1 Number • 1 Special char
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Confirm Password *</label>
+                    {{ registration_form.password_confirm }}
+                    {% if registration_form.password_confirm.errors %}
+                    <div class="text-danger small mt-1">{{ registration_form.password_confirm.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12 mt-2">
+                    <button type="submit" class="btn-auth">
+                        <i class="fas fa-user-plus me-2"></i> Create Account
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="{% url 'login_view' %}" style="color:#f59e0b; font-weight:600; font-size:0.9rem;">
+                <i class="fas fa-arrow-left me-1"></i> Back to Login
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
