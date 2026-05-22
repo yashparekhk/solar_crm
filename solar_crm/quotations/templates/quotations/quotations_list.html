@@ -48,6 +48,7 @@
                         {{ quotation.created_at|date:"d M Y" }}
                     </td>
                    <td style="padding:8px 14px;">
+    <td>
     <div class="d-flex gap-1">
         <a href="{% url 'quotations_detail_view' quotation.pk %}"
            class="btn btn-sm"
@@ -55,17 +56,22 @@
            title="View">
             <i class="fas fa-eye" style="font-size:0.72rem;"></i>
         </a>
+        {% if perms_map.can_edit_quotation %}
         <a href="{% url 'quotations_edit_view' quotation.pk %}"
            class="btn btn-sm btn-warning"
            style="padding:3px 8px;" title="Edit">
             <i class="fas fa-pen" style="font-size:0.72rem;"></i>
         </a>
+        {% endif %}
+        {% if perms_map.can_delete_quotation %}
         <a href="{% url 'quotations_delete_view' quotation.pk %}"
            class="btn btn-sm btn-danger"
            style="padding:3px 8px;" title="Delete">
             <i class="fas fa-trash" style="font-size:0.72rem;"></i>
         </a>
+        {% endif %}
     </div>
+</td>
 </td>
                 </tr>
                 {% empty %}

@@ -7,128 +7,146 @@
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
         <h4 class="fw-bold mb-0" style="color:var(--secondary);">
-            <i class="fas fa-filter me-2" style="color:var(--primary);font-size:1rem;"></i>Leads
+            <i class="fas fa-filter me-2" style="color:var(--primary);"></i>Leads
         </h4>
-        <small class="text-muted">{{ total_count }} total leads in pipeline</small>
+        <small class="text-muted" id="leadCount">
+            {% if perms_map.is_employee %}
+                Your assigned leads
+            {% else %}
+                All leads pipeline
+            {% endif %}
+        </small>
     </div>
-    <a href="{% url 'leads_add_view' %}" class="btn btn-solar btn-sm">
-        <i class="fas fa-plus"></i> New Lead
-    </a>
-</div>
-
-<!-- Search & Filter Bar -->
-<div class="crm-card mb-3">
-    <div class="crm-card-body py-2">
-        <form method="GET">
-            <div class="row g-2 align-items-center">
-                <div class="col-md-7">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white border-end-0">
-                            <i class="fas fa-magnifying-glass text-muted" style="font-size:0.8rem;"></i>
-                        </span>
-                        <input type="text" name="q" value="{{ search_query }}"
-                            class="form-control border-start-0"
-                            placeholder="Search by name, phone, email...">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <select name="status" class="form-select form-select-sm">
-                        <option value="">All Status</option>
-                        {% for value, label in status_choices %}
-                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
-                            {{ label }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex gap-1">
-                    <button class="btn btn-solar btn-sm w-100" type="submit">Search</button>
-                    <a href="{% url 'leads_list_view' %}" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
-                </div>
-            </div>
-        </form>
+    <div class="d-flex gap-2">
+        {% if perms_map.can_create_lead %}
+        <a href="{% url 'leads_add_view' %}" class="btn btn-solar btn-sm">
+            <i class="fas fa-plus"></i> New Lead
+        </a>
+        {% endif %}
     </div>
 </div>
 
-<!-- Leads Table -->
+{% if perms_map.is_employee %}
+<div class="alert border-0 mb-3"
+     style="background:#eff6ff;border-left:4px solid #2563eb !important;
+            border-radius:8px;font-size:0.82rem;color:#1d4ed8;padding:10px 16px;">
+    <i class="fas fa-circle-info me-2"></i>
+    You are viewing leads assigned to you. Contact your admin to get more leads assigned.
+</div>
+{% endif %}
+
 <div class="crm-card">
     <div class="table-responsive">
-        <table class="crm-table" style="font-size:0.82rem;">
+        <table id="leadsTable" class="crm-table w-100">
             <thead>
                 <tr>
-                    <th style="padding:9px 14px;">#</th>
-                    <th style="padding:9px 14px;">Name</th>
-                    <th style="padding:9px 14px;">Phone</th>
-                    <th style="padding:9px 14px;">Email</th>
-                    <th style="padding:9px 14px;">Source</th>
-                    <th style="padding:9px 14px;">Status</th>
-                    <th style="padding:9px 14px;">Date</th>
-                    <th style="padding:9px 14px;">Actions</th>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    {% if perms_map.is_admin %}
+                    <th>Assigned To</th>
+                    {% endif %}
+                    <th>Date</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for lead in leads_list %}
                 <tr>
-                    <td style="padding:8px 14px;color:#94a3b8;">{{ forloop.counter }}</td>
-                    <td style="padding:8px 14px;">
+                    <td style="color:#94a3b8;">{{ forloop.counter }}</td>
+                    <td>
                         <a href="{% url 'leads_detail_view' lead.pk %}"
                            style="font-weight:600;color:var(--secondary);text-decoration:none;">
                             {{ lead.name }}
                         </a>
                     </td>
-                    <td style="padding:8px 14px;color:#64748b;">{{ lead.phone }}</td>
-                    <td style="padding:8px 14px;color:#64748b;">{{ lead.email|default:"—" }}</td>
-                    <td style="padding:8px 14px;color:#64748b;">{{ lead.source|default:"—" }}</td>
-                    <td style="padding:8px 14px;">
-                        <span class="status-badge status-{{ lead.status }}"
-                              style="font-size:0.68rem;">
+                    <td style="color:#64748b;">{{ lead.phone }}</td>
+                    <td style="color:#64748b;">{{ lead.email|default:"—" }}</td>
+                    <td style="color:#64748b;">{{ lead.source|default:"—" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ lead.status }}" style="font-size:0.68rem;">
                             {{ lead.get_status_display }}
                         </span>
                     </td>
-                    <td style="padding:8px 14px;color:#94a3b8;font-size:0.78rem;">
-                        {{ lead.created_at|date:"d M Y" }}
+                    {% if perms_map.is_admin %}
+                    <td>
+                        {% if lead.assigned_to %}
+                        <span style="font-size:0.78rem;color:#374151;font-weight:500;">
+                            <i class="fas fa-user me-1" style="color:#2563eb;font-size:0.68rem;"></i>
+                            {{ lead.assigned_to.get_full_name }}
+                        </span>
+                        {% else %}
+                        <span style="font-size:0.75rem;color:#94a3b8;">
+                            <i class="fas fa-circle-minus me-1"></i>Unassigned
+                        </span>
+                        {% endif %}
                     </td>
-                    <td style="padding:8px 14px;">
+                    {% endif %}
+                    <td style="color:#94a3b8;font-size:0.78rem;">{{ lead.created_at|date:"d M Y" }}</td>
+                    <td>
                         <div class="d-flex gap-1">
-                            <!-- View -->
+                            <!-- View — Always visible -->
                             <a href="{% url 'leads_detail_view' lead.pk %}"
                                class="btn btn-sm"
                                style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
                                title="View Details">
                                 <i class="fas fa-eye" style="font-size:0.72rem;"></i>
                             </a>
-                            <!-- Edit -->
+
+                            <!-- Edit — Admin always, Employee only if assigned -->
+                            {% if perms_map.is_admin or lead.assigned_to == request.user %}
                             <a href="{% url 'leads_edit_view' lead.pk %}"
                                class="btn btn-sm btn-warning"
-                               style="padding:3px 8px;"
-                               title="Edit Lead">
+                               style="padding:3px 8px;" title="Edit">
                                 <i class="fas fa-pen" style="font-size:0.72rem;"></i>
                             </a>
-                            <!-- Convert to Customer -->
+                            {% endif %}
+
+                            <!-- Convert — Admin always, Employee only if assigned -->
+                            {% if perms_map.is_admin or lead.assigned_to == request.user %}
                             <a href="{% url 'leads_convert_view' lead.pk %}"
                                class="btn btn-sm"
                                style="padding:3px 8px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;"
                                title="Convert to Customer">
                                 <i class="fas fa-user-check" style="font-size:0.72rem;"></i>
                             </a>
-                            <!-- Delete -->
+                            {% endif %}
+
+                            <!-- Assign — Admin only -->
+                            {% if perms_map.can_assign_lead %}
+                            <a href="{% url 'leads_assign_view' lead.pk %}"
+                               class="btn btn-sm"
+                               style="padding:3px 8px;background:#faf5ff;color:#7c3aed;border:1px solid #e9d5ff;"
+                               title="Assign to Employee">
+                                <i class="fas fa-user-tag" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% endif %}
+
+                            <!-- Delete — Admin only -->
+                            {% if perms_map.can_delete_lead %}
                             <a href="{% url 'leads_delete_view' lead.pk %}"
                                class="btn btn-sm btn-danger"
-                               style="padding:3px 8px;"
-                               title="Delete Lead">
+                               style="padding:3px 8px;" title="Delete">
                                 <i class="fas fa-trash" style="font-size:0.72rem;"></i>
                             </a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-5" style="color:#94a3b8;">
+                    <td colspan="{% if perms_map.is_admin %}9{% else %}8{% endif %}"
+                        class="text-center py-5" style="color:#94a3b8;">
                         <i class="fas fa-filter fa-2x mb-2 d-block" style="opacity:0.2;"></i>
-                        No leads found.
-                        <a href="{% url 'leads_add_view' %}" style="color:var(--primary);">
-                            Add your first lead
-                        </a>
+                        {% if perms_map.is_employee %}
+                            No leads assigned to you yet. Contact your admin.
+                        {% else %}
+                            No leads found.
+                            <a href="{% url 'leads_add_view' %}" style="color:var(--primary);">Add your first lead</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -137,4 +155,32 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+    $('#leadsTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50, -1], ['5', '10', '25', '50', 'All']],
+        order: [[{% if perms_map.is_admin %}7{% else %}6{% endif %}, 'desc']],
+        columnDefs: [
+            { orderable: false, targets: [-1] },
+            { searchable: false, targets: [-1] },
+        ],
+        language: {
+            search: '',
+            searchPlaceholder: 'Search leads...',
+            lengthMenu: 'Show _MENU_ entries',
+            info: 'Showing _START_ to _END_ of _TOTAL_ leads',
+            paginate: {
+                previous: '<i class="fas fa-chevron-left"></i>',
+                next:     '<i class="fas fa-chevron-right"></i>',
+            },
+        },
+        dom: '<"dt-top-bar"lf>rt<"dt-bottom-bar"ip>',
+    });
+});
+</script>
 {% endblock %}

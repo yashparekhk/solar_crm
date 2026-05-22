@@ -14,22 +14,43 @@
         <small class="text-muted">Viewing full information for this lead</small>
     </div>
     <div class="d-flex gap-2">
-        <a href="{% url 'leads_edit_view' lead_instance.pk %}"
-           class="btn btn-solar btn-sm"
-           style="background:#fffbeb;color:#92400e !important;border:1px solid #fde68a;">
-            <i class="fas fa-pen"></i> Edit
-        </a>
-        <a href="{% url 'leads_convert_view' lead_instance.pk %}"
-           class="btn btn-solar btn-sm"
-           style="background:#f0fdf4;color:#15803d !important;border:1px solid #bbf7d0;">
-            <i class="fas fa-user-check"></i> Convert to Customer
-        </a>
-        <a href="{% url 'leads_list_view' %}"
-           class="btn btn-solar btn-sm"
-           style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
-    </div>
+    {% if perms_map.is_admin or lead_instance.assigned_to == request.user %}
+    <a href="{% url 'leads_edit_view' lead_instance.pk %}"
+       class="btn btn-solar btn-sm"
+       style="background:#fffbeb;color:#92400e !important;border:1px solid #fde68a;">
+        <i class="fas fa-pen"></i> Edit
+    </a>
+    {% endif %}
+
+    {% if perms_map.is_admin or lead_instance.assigned_to == request.user %}
+    <a href="{% url 'leads_convert_view' lead_instance.pk %}"
+       class="btn btn-solar btn-sm"
+       style="background:#f0fdf4;color:#15803d !important;border:1px solid #bbf7d0;">
+        <i class="fas fa-user-check"></i> Convert to Customer
+    </a>
+    {% endif %}
+
+    {% if perms_map.can_assign_lead %}
+    <a href="{% url 'leads_assign_view' lead_instance.pk %}"
+       class="btn btn-solar btn-sm"
+       style="background:#faf5ff;color:#7c3aed !important;border:1px solid #e9d5ff;">
+        <i class="fas fa-user-tag"></i> Assign
+    </a>
+    {% endif %}
+
+    {% if perms_map.can_delete_lead %}
+    <a href="{% url 'leads_delete_view' lead_instance.pk %}"
+       class="btn btn-solar btn-sm"
+       style="background:#fef2f2;color:#b91c1c !important;border:1px solid #fecaca;">
+        <i class="fas fa-trash"></i> Delete
+    </a>
+    {% endif %}
+
+    <a href="{% url 'leads_list_view' %}"
+       class="btn btn-solar btn-sm"
+       style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
 </div>
 
 <div class="row g-3">

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Assign Lead — Solar CRM{% endblock %}
+{% block breadcrumb %}Leads / Assign{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-user-tag me-2" style="color:#7c3aed;"></i>
+            Assign Lead
+        </h4>
+        <small class="text-muted">Assign this lead to an employee</small>
+    </div>
+    <a href="{% url 'leads_detail_view' lead_instance.pk %}"
+       class="btn btn-solar btn-sm"
+       style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-6">
+        <div class="crm-card">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-user-tag" style="color:#7c3aed;"></i> Assign Lead</h5>
+            </div>
+            <div class="crm-card-body">
+                <!-- Lead Summary -->
+                <div class="p-3 mb-4"
+                     style="background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+                    <div style="font-size:0.72rem;color:#94a3b8;font-weight:700;
+                                text-transform:uppercase;margin-bottom:8px;">Lead</div>
+                    <div style="font-weight:700;color:var(--secondary);font-size:0.95rem;">
+                        {{ lead_instance.name }}
+                    </div>
+                    <div style="font-size:0.8rem;color:#64748b;margin-top:3px;">
+                        {{ lead_instance.phone }}
+                        {% if lead_instance.email %}· {{ lead_instance.email }}{% endif %}
+                    </div>
+                    <div class="mt-2">
+                        <span class="status-badge status-{{ lead_instance.status }}"
+                              style="font-size:0.68rem;">
+                            {{ lead_instance.get_status_display }}
+                        </span>
+                        {% if lead_instance.assigned_to %}
+                        <span style="font-size:0.75rem;color:#64748b;margin-left:8px;">
+                            Currently: <strong>{{ lead_instance.assigned_to.get_full_name }}</strong>
+                        </span>
+                        {% else %}
+                        <span style="font-size:0.75rem;color:#94a3b8;margin-left:8px;">
+                            Currently unassigned
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <label class="form-label">Assign To *</label>
+                    <select name="assigned_to" class="form-select mb-3">
+                        <option value="">— Remove Assignment (Unassign) —</option>
+                        {% for emp in employees_list %}
+                        <option value="{{ emp.pk }}"
+                            {% if lead_instance.assigned_to and lead_instance.assigned_to.pk == emp.pk %}
+                            selected{% endif %}>
+                            {{ emp.get_full_name }} — {{ emp.role|title }}
+                            {% if emp.role == 'admin' %}(You){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-solar px-4"
+                                style="background:#7c3aed;">
+                            <i class="fas fa-user-tag me-1"></i> Assign Lead
+                        </button>
+                        <a href="{% url 'leads_detail_view' lead_instance.pk %}"
+                           class="btn btn-solar px-4"
+                           style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

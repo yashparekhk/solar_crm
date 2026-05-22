@@ -96,15 +96,16 @@
                     <span class="sidebar-text">Support Tickets</span>
                 </a>
             </li>
-
-            <li class="menu-header sidebar-text">Data</li>
-            <li>
-                <a href="{% url 'export_leads_excel' %}" title="Export Leads">
-                    <i class="fas fa-arrow-up-from-bracket"></i>
-                    <span class="sidebar-text">Export Leads</span>
-                </a>
-            </li>
-          <li>
+<!-- Data section — hide import from employee -->
+<li class="menu-header sidebar-text">Data</li>
+<li>
+    <a href="{% url 'export_leads_excel' %}" title="Export Leads">
+        <i class="fas fa-arrow-up-from-bracket"></i>
+        <span class="sidebar-text">Export Leads</span>
+    </a>
+</li>
+{% if perms_map.can_import %}
+<li>
     <a href="{% url 'import_leads_view' %}"
        class="{% if 'import' in request.path %}active{% endif %}"
        title="Import Leads">
@@ -112,7 +113,7 @@
         <span class="sidebar-text">Import Leads</span>
     </a>
 </li>
-
+{% endif %}
             <li class="menu-header sidebar-text">Account</li>
             <li>
                 <a href="{% url 'profile_view' %}"
@@ -123,21 +124,22 @@
                 </a>
             </li>
 
-            {% if user.role == 'admin' %}
-            <li class="menu-header sidebar-text">Admin</li>
-            <li>
-                <a href="{% url 'register_view' %}" title="Add User">
-                    <i class="fas fa-user-plus"></i>
-                    <span class="sidebar-text">Add User</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/" title="Admin Panel">
-                    <i class="fas fa-gear"></i>
-                    <span class="sidebar-text">Admin Panel</span>
-                </a>
-            </li>
-            {% endif %}
+           <!-- Admin section — admin only -->
+{% if perms_map.can_manage_users %}
+<li class="menu-header sidebar-text">Admin</li>
+<li>
+    <a href="{% url 'register_view' %}" title="Add User">
+        <i class="fas fa-user-plus"></i>
+        <span class="sidebar-text">Add User</span>
+    </a>
+</li>
+<li>
+    <a href="/admin/" title="Admin Panel">
+        <i class="fas fa-gear"></i>
+        <span class="sidebar-text">Admin Panel</span>
+    </a>
+</li>
+{% endif %}
 
         </ul>
 

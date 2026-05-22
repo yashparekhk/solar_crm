@@ -124,18 +124,24 @@
                         {{ ticket.created_at|date:"d M Y" }}
                     </td>
                     <td style="padding:8px 14px;">
-                        <div class="d-flex gap-1">
-                            <a href="{% url 'tickets_edit_view' ticket.pk %}"
-                               class="btn btn-sm btn-warning"
-                               style="padding:3px 8px;" title="Edit">
-                                <i class="fas fa-pen" style="font-size:0.72rem;"></i>
-                            </a>
-                            <a href="{% url 'tickets_delete_view' ticket.pk %}"
-                               class="btn btn-sm btn-danger"
-                               style="padding:3px 8px;" title="Delete">
-                                <i class="fas fa-trash" style="font-size:0.72rem;"></i>
-                            </a>
-                        </div>
+                        <td>
+    <div class="d-flex gap-1">
+        {% if perms_map.can_edit_ticket %}
+        <a href="{% url 'tickets_edit_view' ticket.pk %}"
+           class="btn btn-sm btn-warning"
+           style="padding:3px 8px;" title="Edit">
+            <i class="fas fa-pen" style="font-size:0.72rem;"></i>
+        </a>
+        {% endif %}
+        {% if perms_map.can_delete_ticket %}
+        <a href="{% url 'tickets_delete_view' ticket.pk %}"
+           class="btn btn-sm btn-danger"
+           style="padding:3px 8px;" title="Delete">
+            <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+        </a>
+        {% endif %}
+    </div>
+</td>
                     </td>
                 </tr>
                 {% empty %}

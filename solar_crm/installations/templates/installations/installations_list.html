@@ -50,6 +50,7 @@
                         </span>
                     </td>
                     <td style="padding:8px 14px;">
+    <td>
     <div class="d-flex gap-1">
         <a href="{% url 'installations_detail_view' installation.pk %}"
            class="btn btn-sm"
@@ -57,17 +58,22 @@
            title="View">
             <i class="fas fa-eye" style="font-size:0.72rem;"></i>
         </a>
+        {% if perms_map.can_edit_installation %}
         <a href="{% url 'installations_edit_view' installation.pk %}"
            class="btn btn-sm btn-warning"
            style="padding:3px 8px;" title="Edit">
             <i class="fas fa-pen" style="font-size:0.72rem;"></i>
         </a>
+        {% endif %}
+        {% if perms_map.can_delete_installation %}
         <a href="{% url 'installations_delete_view' installation.pk %}"
            class="btn btn-sm btn-danger"
            style="padding:3px 8px;" title="Delete">
             <i class="fas fa-trash" style="font-size:0.72rem;"></i>
         </a>
+        {% endif %}
     </div>
+</td>
 </td>
                 </tr>
                 {% empty %}
