@@ -96,24 +96,26 @@
                     <span class="sidebar-text">Support Tickets</span>
                 </a>
             </li>
-<!-- Data section — hide import from employee -->
-<li class="menu-header sidebar-text">Data</li>
-<li>
-    <a href="{% url 'export_leads_excel' %}" title="Export Leads">
-        <i class="fas fa-arrow-up-from-bracket"></i>
-        <span class="sidebar-text">Export Leads</span>
-    </a>
-</li>
-{% if perms_map.can_import %}
-<li>
-    <a href="{% url 'import_leads_view' %}"
-       class="{% if 'import' in request.path %}active{% endif %}"
-       title="Import Leads">
-        <i class="fas fa-file-arrow-up"></i>
-        <span class="sidebar-text">Import Leads</span>
-    </a>
-</li>
-{% endif %}
+
+            <!-- Data section -->
+            <li class="menu-header sidebar-text">Data</li>
+            <li>
+                <a href="{% url 'export_leads_excel' %}" title="Export Leads">
+                    <i class="fas fa-arrow-up-from-bracket"></i>
+                    <span class="sidebar-text">Export Leads</span>
+                </a>
+            </li>
+            {% if perms_map.can_import %}
+            <li>
+                <a href="{% url 'import_leads_view' %}"
+                   class="{% if 'import' in request.path %}active{% endif %}"
+                   title="Import Leads">
+                    <i class="fas fa-file-arrow-up"></i>
+                    <span class="sidebar-text">Import Leads</span>
+                </a>
+            </li>
+            {% endif %}
+
             <li class="menu-header sidebar-text">Account</li>
             <li>
                 <a href="{% url 'profile_view' %}"
@@ -124,22 +126,16 @@
                 </a>
             </li>
 
-           <!-- Admin section — admin only -->
-{% if perms_map.can_manage_users %}
-<li class="menu-header sidebar-text">Admin</li>
-<li>
-    <a href="{% url 'register_view' %}" title="Add User">
-        <i class="fas fa-user-plus"></i>
-        <span class="sidebar-text">Add User</span>
-    </a>
-</li>
-<li>
-    <a href="/admin/" title="Admin Panel">
-        <i class="fas fa-gear"></i>
-        <span class="sidebar-text">Admin Panel</span>
-    </a>
-</li>
-{% endif %}
+            <!-- Admin section — admin only -->
+            {% if perms_map.can_manage_users %}
+            <li class="menu-header sidebar-text">Admin</li>
+            <li>
+                <a href="/admin/" title="Admin Panel">
+                    <i class="fas fa-gear"></i>
+                    <span class="sidebar-text">Admin Panel</span>
+                </a>
+            </li>
+            {% endif %}
 
         </ul>
 
@@ -166,16 +162,65 @@
                 <span class="greeting">
                     Hello, <strong>{{ user.first_name|default:user.username }}</strong>
                 </span>
-                <a href="{% url 'profile_view' %}" class="avatar-circle top-avatar" title="My Profile">
-                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                </a>
+
+                <!-- ── AVATAR DROPDOWN ── -->
+                <div class="nav-dropdown-wrapper" id="avatarDropdown">
+                    <div class="avatar-circle top-avatar"
+                         onclick="toggleAvatarMenu()"
+                         title="My Profile"
+                         style="cursor:pointer; user-select:none;">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                    </div>
+                    <div class="nav-dropdown-menu" id="avatarMenu">
+
+                        <!-- User info header -->
+                        <div class="nav-dropdown-header">
+                            <div class="avatar-circle"
+                                 style="width:42px;height:42px;font-size:0.9rem;flex-shrink:0;">
+                                {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight:700;font-size:0.88rem;color:#0f172a;">
+                                    {{ user.first_name }} {{ user.last_name }}
+                                </div>
+                                <div style="font-size:0.72rem;color:#64748b;margin-top:2px;">
+                                    {{ user.email }}
+                                </div>
+                                <span class="badge-role"
+                                      style="margin-top:5px;display:inline-block;
+                                             background:#eff6ff;color:#2563eb;
+                                             border:1px solid #bfdbfe;">
+                                    {% if user.is_superuser %}Admin{% else %}Employee{% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="nav-dropdown-divider"></div>
+
+                        <a href="{% url 'profile_view' %}" class="nav-dropdown-item">
+                            <i class="fas fa-user" style="width:14px;text-align:center;"></i>
+                            My Profile
+                        </a>
+
+                        <div class="nav-dropdown-divider"></div>
+
+                        <a href="{% url 'logout_view' %}" class="nav-dropdown-item nav-dropdown-item-danger">
+                            <i class="fas fa-right-from-bracket" style="width:14px;text-align:center;"></i>
+                            Sign Out
+                        </a>
+
+                    </div>
+                </div>
+                <!-- ── END AVATAR DROPDOWN ── -->
+
             </div>
         </nav>
 
         {% if messages %}
         <div class="px-4 pt-3">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm" style="font-size:0.855rem;" role="alert">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm"
+                 style="font-size:0.855rem;" role="alert">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -195,20 +240,26 @@
 {% block auth_content %}{% endblock %}
 {% endif %}
 
+<!-- ── TOAST CONTAINER ── -->
+<div id="toastContainer"
+     style="position:fixed;bottom:24px;right:24px;z-index:99999;
+            display:flex;flex-direction:column;gap:8px;">
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
+// ══ SIDEBAR LOGIC ══
 const sidebar   = document.getElementById('sidebar');
 const content   = document.getElementById('content');
 const toggleBtn = document.getElementById('sidebarToggle');
 const overlay   = document.getElementById('mobileOverlay');
 
-// Desktop: sidebar starts collapsed, expands on hover
 if (window.innerWidth > 768) {
     sidebar.classList.add('collapsed');
     content.classList.add('expanded');
 }
 
-// Hover expand/collapse on desktop
 sidebar?.addEventListener('mouseenter', function () {
     if (window.innerWidth > 768 && !sidebar.classList.contains('pinned')) {
         sidebar.classList.remove('collapsed');
@@ -222,7 +273,6 @@ sidebar?.addEventListener('mouseleave', function () {
     }
 });
 
-// Toggle button
 toggleBtn?.addEventListener('click', function () {
     if (window.innerWidth <= 768) {
         const isOpen = sidebar.classList.toggle('mobile-open');
@@ -257,7 +307,49 @@ window.addEventListener('resize', function () {
         }
     }
 });
+
+// ══ AVATAR DROPDOWN ══
+function toggleAvatarMenu() {
+    document.getElementById('avatarMenu').classList.toggle('open');
+}
+
+document.addEventListener('click', function (e) {
+    const wrapper = document.getElementById('avatarDropdown');
+    if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('avatarMenu')?.classList.remove('open');
+    }
+});
+
+// ══ TOAST SYSTEM ══
+function showToast(message, type = 'success') {
+    const colors = {
+        success: { bg:'#f0fdf4', border:'#bbf7d0', color:'#15803d', icon:'fa-circle-check' },
+        error:   { bg:'#fef2f2', border:'#fecaca', color:'#dc2626', icon:'fa-circle-xmark' },
+        info:    { bg:'#eff6ff', border:'#bfdbfe', color:'#2563eb', icon:'fa-circle-info'  },
+    };
+    const c = colors[type] || colors.success;
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        display:flex; align-items:center; gap:10px;
+        background:${c.bg}; border:1px solid ${c.border};
+        color:${c.color}; padding:10px 16px; border-radius:9px;
+        font-size:0.83rem; font-weight:600;
+        box-shadow:0 4px 14px rgba(0,0,0,0.08);
+        animation:slideInToast 0.2s ease; min-width:200px;
+    `;
+    toast.innerHTML = `<i class="fas ${c.icon}"></i> ${message}`;
+    document.getElementById('toastContainer').appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 </script>
+
+<style>
+@keyframes slideInToast {
+    from { opacity:0; transform:translateX(20px); }
+    to   { opacity:1; transform:translateX(0); }
+}
+</style>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -4,6 +4,9 @@
 
 {% block content %}
 
+<!-- CSRF token for AJAX POST requests -->
+{% csrf_token %}
+
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
         <h4 class="fw-bold mb-0" style="color:var(--secondary);">
@@ -55,7 +58,7 @@
             </thead>
             <tbody>
                 {% for lead in leads_list %}
-                <tr>
+                <tr id="lead-row-{{ lead.pk }}">
                     <td style="color:#94a3b8;">{{ forloop.counter }}</td>
                     <td>
                         <a href="{% url 'leads_detail_view' lead.pk %}"
@@ -66,11 +69,29 @@
                     <td style="color:#64748b;">{{ lead.phone }}</td>
                     <td style="color:#64748b;">{{ lead.email|default:"—" }}</td>
                     <td style="color:#64748b;">{{ lead.source|default:"—" }}</td>
+
+                    <!-- ── STATUS CELL ── -->
                     <td>
+                        {% if perms_map.is_admin or lead.assigned_to == request.user %}
+                        <!-- Editable dropdown for admin / assigned employee -->
+                        <select class="status-select status-{{ lead.status }}"
+                                data-lead-id="{{ lead.pk }}"
+                                title="Click to change status">
+                            <option value="new"       {% if lead.status == 'new' %}selected{% endif %}>New</option>
+                            <option value="contacted" {% if lead.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                            <option value="qualified" {% if lead.status == 'qualified' %}selected{% endif %}>Qualified</option>
+                            <option value="proposal"  {% if lead.status == 'proposal' %}selected{% endif %}>Proposal</option>
+                            <option value="won"       {% if lead.status == 'won' %}selected{% endif %}>Won</option>
+                            <option value="lost"      {% if lead.status == 'lost' %}selected{% endif %}>Lost</option>
+                        </select>
+                        {% else %}
+                        <!-- Read-only badge for others -->
                         <span class="status-badge status-{{ lead.status }}" style="font-size:0.68rem;">
                             {{ lead.get_status_display }}
                         </span>
+                        {% endif %}
                     </td>
+
                     {% if perms_map.is_admin %}
                     <td>
                         {% if lead.assigned_to %}
@@ -85,10 +106,11 @@
                         {% endif %}
                     </td>
                     {% endif %}
+
                     <td style="color:#94a3b8;font-size:0.78rem;">{{ lead.created_at|date:"d M Y" }}</td>
                     <td>
                         <div class="d-flex gap-1">
-                            <!-- View — Always visible -->
+                            <!-- View -->
                             <a href="{% url 'leads_detail_view' lead.pk %}"
                                class="btn btn-sm"
                                style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
@@ -96,7 +118,7 @@
                                 <i class="fas fa-eye" style="font-size:0.72rem;"></i>
                             </a>
 
-                            <!-- Edit — Admin always, Employee only if assigned -->
+                            <!-- Edit -->
                             {% if perms_map.is_admin or lead.assigned_to == request.user %}
                             <a href="{% url 'leads_edit_view' lead.pk %}"
                                class="btn btn-sm btn-warning"
@@ -105,7 +127,7 @@
                             </a>
                             {% endif %}
 
-                            <!-- Convert — Admin always, Employee only if assigned -->
+                            <!-- Convert -->
                             {% if perms_map.is_admin or lead.assigned_to == request.user %}
                             <a href="{% url 'leads_convert_view' lead.pk %}"
                                class="btn btn-sm"
@@ -115,7 +137,7 @@
                             </a>
                             {% endif %}
 
-                            <!-- Assign — Admin only -->
+                            <!-- Assign -->
                             {% if perms_map.can_assign_lead %}
                             <a href="{% url 'leads_assign_view' lead.pk %}"
                                class="btn btn-sm"
@@ -125,7 +147,7 @@
                             </a>
                             {% endif %}
 
-                            <!-- Delete — Admin only -->
+                            <!-- Delete -->
                             {% if perms_map.can_delete_lead %}
                             <a href="{% url 'leads_delete_view' lead.pk %}"
                                class="btn btn-sm btn-danger"
@@ -160,6 +182,8 @@
 {% block extra_js %}
 <script>
 $(document).ready(function () {
+
+    // ── DataTable init ──
     $('#leadsTable').DataTable({
         responsive: true,
         pageLength: 10,
@@ -181,6 +205,54 @@ $(document).ready(function () {
         },
         dom: '<"dt-top-bar"lf>rt<"dt-bottom-bar"ip>',
     });
+
+    // ── AJAX: Inline status change ──
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    $(document).on('change', '.status-select', function () {
+        const select    = this;
+        const leadId    = select.dataset.leadId;
+        const newStatus = select.value;
+        const prevStatus = select.dataset.prevStatus || select.querySelector('[selected]')?.value;
+
+        // Disable while saving
+        select.disabled = true;
+
+        fetch(`/api/leads/${leadId}/status/`, {
+            method:  'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken':  csrfToken,
+            },
+            body: JSON.stringify({ status: newStatus }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            select.disabled = false;
+            if (data.success) {
+                // Update dropdown colour class
+                select.className = `status-select status-${newStatus}`;
+                // Save new value as prev
+                select.dataset.prevStatus = newStatus;
+                showToast(`Status updated to "${data.status_label}"`, 'success');
+            } else {
+                // Revert to previous value on failure
+                if (prevStatus) select.value = prevStatus;
+                showToast('Failed to update status', 'error');
+            }
+        })
+        .catch(() => {
+            select.disabled = false;
+            if (prevStatus) select.value = prevStatus;
+            showToast('Network error — please try again', 'error');
+        });
+    });
+
+    // Store initial value on focus so we can revert on error
+    $(document).on('focus', '.status-select', function () {
+        this.dataset.prevStatus = this.value;
+    });
+
 });
 </script>
 {% endblock %}

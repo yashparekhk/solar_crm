@@ -5,9 +5,11 @@ Naming Convention:
   - Variables: snake_case
 """
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.db.models import Sum
+import json
 
 
 @login_required(login_url='/accounts/login/')
@@ -86,3 +88,71 @@ def dashboard_view(request):
         print(f"Dashboard error: {error}")
 
     return render(request, 'dashboard/dashboard.html', dashboard_context)
+
+
+@login_required(login_url='/accounts/login/')
+def dashboard_stats_api(request):
+    """AJAX endpoint — returns live dashboard stat counts as JSON."""
+
+    from leads.models import Lead
+    from customers.models import Customer
+    from quotations.models import Quotation
+    from installations.models import Installation
+    from payments.models import Payment
+
+    try:
+        revenue_aggregate = Payment.objects.filter(
+            status='paid'
+        ).aggregate(total=Sum('amount'))
+
+        data = {
+            'total_leads':         Lead.objects.count(),
+            'total_customers':     Customer.objects.count(),
+            'total_quotations':    Quotation.objects.count(),
+            'total_installations': Installation.objects.count(),
+            'pending_payments':    Payment.objects.filter(status='unpaid').count(),
+            'total_revenue':       str(revenue_aggregate['total'] or 0),
+            'leads_new':           Lead.objects.filter(status='new').count(),
+            'leads_contacted':     Lead.objects.filter(status='contacted').count(),
+            'leads_qualified':     Lead.objects.filter(status='qualified').count(),
+            'leads_proposal':      Lead.objects.filter(status='proposal').count(),
+            'leads_won':           Lead.objects.filter(status='won').count(),
+        }
+        return JsonResponse({'success': True, 'data': data})
+
+    except Exception as error:
+        print(f"Dashboard stats API error: {error}")
+        return JsonResponse({'success': False, 'error': str(error)}, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+def update_lead_status_api(request, pk):
+    """AJAX endpoint — updates a lead's status inline from the leads table."""
+
+    from leads.models import Lead
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    try:
+        body       = json.loads(request.body)
+        new_status = body.get('status')
+
+        # Validate against allowed statuses
+        allowed = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost']
+        if new_status not in allowed:
+            return JsonResponse({'success': False, 'error': 'Invalid status'}, status=400)
+
+        lead        = get_object_or_404(Lead, pk=pk)
+        lead.status = new_status
+        lead.save()
+
+        return JsonResponse({
+            'success':      True,
+            'status':       lead.status,
+            'status_label': lead.get_status_display(),
+        })
+
+    except Exception as error:
+        print(f"Update lead status error: {error}")
+        return JsonResponse({'success': False, 'error': str(error)}, status=500)
