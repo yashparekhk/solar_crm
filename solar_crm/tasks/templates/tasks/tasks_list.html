@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% block title %}Tasks — Solar CRM{% endblock %}
+{% block breadcrumb %}Tasks & Follow-ups{% endblock %}
+
+{% block content %}
+
+{% csrf_token %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-check-circle me-2" style="color:var(--primary);"></i>Tasks & Follow-ups
+        </h4>
+        <small class="text-muted">Manage calls, follow-ups and team tasks</small>
+    </div>
+    <a href="{% url 'tasks_add_view' %}" class="btn btn-solar btn-sm">
+        <i class="fas fa-plus"></i> New Task
+    </a>
+</div>
+
+<!-- Summary stat mini-cards -->
+<div class="row g-2 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="padding:12px 14px;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Today</div>
+                    <div class="stat-number" id="task-stat-today" style="font-size:1.4rem;">{{ counts.today }}</div>
+                </div>
+                <div class="stat-icon" style="background:#eff6ff;">
+                    <i class="fas fa-calendar-day" style="color:#2563eb;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="padding:12px 14px;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Overdue</div>
+                    <div class="stat-number" id="task-stat-overdue" style="font-size:1.4rem;color:#dc2626;">{{ counts.overdue }}</div>
+                </div>
+                <div class="stat-icon" style="background:#fef2f2;">
+                    <i class="fas fa-clock" style="color:#dc2626;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="padding:12px 14px;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-number" id="task-stat-pending" style="font-size:1.4rem;">{{ counts.pending }}</div>
+                </div>
+                <div class="stat-icon" style="background:#fffbeb;">
+                    <i class="fas fa-hourglass-half" style="color:#d97706;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="padding:12px 14px;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Completed</div>
+                    <div class="stat-number" id="task-stat-completed" style="font-size:1.4rem;color:#15803d;">{{ counts.completed }}</div>
+                </div>
+                <div class="stat-icon" style="background:#f0fdf4;">
+                    <i class="fas fa-check-circle" style="color:#15803d;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main table -->
+<div class="crm-card">
+    <div class="table-responsive">
+        <table id="tasksTable" class="crm-table w-100">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Related</th>
+                    <th>Due Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr id="task-row-{{ task.pk }}"
+                    class="{% if task.status == 'completed' %}task-row-done{% endif %}">
+
+                    <td style="color:#94a3b8;">{{ forloop.counter }}</td>
+
+                    <!-- Title -->
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="task-type-icon type-{{ task.task_type }}"
+                                 style="width:28px;height:28px;font-size:0.7rem;">
+                                {% if task.task_type == 'call' %}
+                                    <i class="fas fa-phone"></i>
+                                {% elif task.task_type == 'followup' %}
+                                    <i class="fas fa-rotate-right"></i>
+                                {% elif task.task_type == 'meeting' %}
+                                    <i class="fas fa-users"></i>
+                                {% else %}
+                                    <i class="fas fa-list-check"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div style="font-weight:600;color:var(--secondary);font-size:0.845rem;
+                                            {% if task.status == 'completed' %}text-decoration:line-through;opacity:0.6;{% endif %}">
+                                    {{ task.title }}
+                                </div>
+                                {% if task.description %}
+                                <div style="font-size:0.7rem;color:#94a3b8;">
+                                    {{ task.description|truncatechars:40 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Type -->
+                    <td>
+                        <span style="font-size:0.75rem;color:#64748b;">
+                            {{ task.get_task_type_display }}
+                        </span>
+                    </td>
+
+                    <!-- Priority -->
+                    <td>
+                        <span class="priority-badge priority-badge-{{ task.priority }}">
+                            {% if task.priority == 'high' %}🔴
+                            {% elif task.priority == 'medium' %}🟡
+                            {% else %}🟢{% endif %}
+                            {{ task.priority|title }}
+                        </span>
+                    </td>
+
+                    <!-- Status — AJAX dropdown -->
+                    <td>
+                        {% if task.status != 'completed' %}
+                        <select class="task-status-select status-{{ task.status }}"
+                                data-task-id="{{ task.pk }}"
+                                title="Change status">
+                            <option value="pending"     {% if task.status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="overdue"     {% if task.status == 'overdue' %}selected{% endif %}>Overdue</option>
+                            <option value="completed"   {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                        {% else %}
+                        <span class="status-badge status-completed" style="font-size:0.68rem;">
+                            <i class="fas fa-check me-1"></i>Completed
+                        </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Assigned to -->
+                    <td>
+                        <span style="font-size:0.78rem;color:#374151;font-weight:500;">
+                            <i class="fas fa-user me-1" style="color:#2563eb;font-size:0.68rem;"></i>
+                            {{ task.assigned_to.get_full_name|default:task.assigned_to.username }}
+                        </span>
+                    </td>
+
+                    <!-- Related lead/customer -->
+                    <td style="font-size:0.75rem;color:#64748b;">
+                        {% if task.related_lead %}
+                            <i class="fas fa-filter me-1" style="color:#f59e0b;"></i>{{ task.related_lead.name }}
+                        {% elif task.related_customer %}
+                            <i class="fas fa-building-user me-1" style="color:#15803d;"></i>{{ task.related_customer.name }}
+                        {% else %}
+                            <span style="color:#cbd5e1;">—</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Due date -->
+                    <td style="font-size:0.78rem;">
+                        <span style="color:{% if task.is_overdue %}#dc2626{% else %}#94a3b8{% endif %};">
+                            {% if task.is_overdue %}<i class="fas fa-triangle-exclamation me-1"></i>{% endif %}
+                            {{ task.due_date|date:"d M Y" }}
+                            {% if task.due_time %}
+                            <div style="color:#94a3b8;">{{ task.due_time|time:"h:i A" }}</div>
+                            {% endif %}
+                        </span>
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+                        <div class="d-flex gap-1">
+                            <!-- Mark complete -->
+                            {% if task.status != 'completed' %}
+                            <button class="btn btn-sm complete-task-btn"
+                                    data-task-id="{{ task.pk }}"
+                                    style="padding:3px 8px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;"
+                                    title="Mark Complete">
+                                <i class="fas fa-check" style="font-size:0.72rem;"></i>
+                            </button>
+                            {% endif %}
+
+                            <!-- Edit -->
+                            <a href="{% url 'tasks_edit_view' task.pk %}"
+                               class="btn btn-sm btn-warning"
+                               style="padding:3px 8px;" title="Edit">
+                                <i class="fas fa-pen" style="font-size:0.72rem;"></i>
+                            </a>
+
+                            <!-- Delete (admin only) -->
+                            {% if perms_map.is_admin %}
+                            <a href="{% url 'tasks_delete_view' task.pk %}"
+                               class="btn btn-sm btn-danger"
+                               style="padding:3px 8px;" title="Delete">
+                                <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5" style="color:#94a3b8;">
+                        <i class="fas fa-check-circle fa-2x mb-2 d-block" style="opacity:0.2;"></i>
+                        No tasks found.
+                        <a href="{% url 'tasks_add_view' %}" style="color:var(--primary);">Create your first task</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+
+    // ── DataTable ──
+    $('#tasksTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50, -1], ['5', '10', '25', '50', 'All']],
+        order: [[7, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: [-1] },
+            { searchable: false, targets: [-1] },
+        ],
+        language: {
+            search: '',
+            searchPlaceholder: 'Search tasks...',
+            lengthMenu: 'Show _MENU_ entries',
+            info: 'Showing _START_ to _END_ of _TOTAL_ tasks',
+            paginate: {
+                previous: '<i class="fas fa-chevron-left"></i>',
+                next:     '<i class="fas fa-chevron-right"></i>',
+            },
+        },
+        dom: '<"dt-top-bar"lf>rt<"dt-bottom-bar"ip>',
+    });
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // ── AJAX: Mark complete button ──
+    $(document).on('click', '.complete-task-btn', function () {
+        const btn    = $(this);
+        const taskId = btn.data('task-id');
+        btn.prop('disabled', true);
+
+        fetch(`/tasks/${taskId}/complete/`, {
+            method:  'POST',
+            headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' },
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const row = $(`#task-row-${taskId}`);
+                // Fade row and strike title
+                row.find('td:nth-child(2) div[style*="font-weight"]')
+                   .css({'text-decoration': 'line-through', 'opacity': '0.5'});
+                // Replace status dropdown with completed badge
+                row.find('.task-status-select')
+                   .replaceWith('<span class="status-badge status-completed" style="font-size:0.68rem;"><i class="fas fa-check me-1"></i>Completed</span>');
+                // Remove complete button
+                btn.remove();
+                // Update mini stat cards
+                refreshTaskStats();
+                showToast('Task marked as complete!', 'success');
+            } else {
+                btn.prop('disabled', false);
+                showToast('Failed to update task', 'error');
+            }
+        })
+        .catch(() => {
+            btn.prop('disabled', false);
+            showToast('Network error', 'error');
+        });
+    });
+
+    // ── AJAX: Status dropdown change ──
+    $(document).on('change', '.task-status-select', function () {
+        const select    = this;
+        const taskId    = select.dataset.taskId;
+        const newStatus = select.value;
+        const prevStatus = select.dataset.prevStatus || select.value;
+
+        select.disabled = true;
+
+        fetch(`/tasks/${taskId}/status/`, {
+            method:  'POST',
+            headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ status: newStatus }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            select.disabled = false;
+            if (data.success) {
+                select.className = `task-status-select status-${newStatus}`;
+                select.dataset.prevStatus = newStatus;
+                if (newStatus === 'completed') {
+                    // Replace with badge and remove complete button
+                    $(select).replaceWith('<span class="status-badge status-completed" style="font-size:0.68rem;"><i class="fas fa-check me-1"></i>Completed</span>');
+                    $(`#task-row-${taskId} .complete-task-btn`).remove();
+                }
+                refreshTaskStats();
+                showToast('Status updated', 'success');
+            } else {
+                select.value = prevStatus;
+                showToast('Failed to update status', 'error');
+            }
+        })
+        .catch(() => {
+            select.disabled = false;
+            select.value = prevStatus;
+            showToast('Network error', 'error');
+        });
+    });
+
+    $(document).on('focus', '.task-status-select', function () {
+        this.dataset.prevStatus = this.value;
+    });
+
+    // ── AJAX: Refresh mini stat cards ──
+    function refreshTaskStats() {
+        fetch("{% url 'tasks_widget_api' %}")
+            .then(res => res.json())
+            .then(json => {
+                if (!json.success) return;
+                const d = json.data;
+                const el = (id) => document.getElementById(id);
+                if (el('task-stat-today'))     el('task-stat-today').textContent     = d.today;
+                if (el('task-stat-overdue'))   el('task-stat-overdue').textContent   = d.overdue;
+                if (el('task-stat-pending'))   el('task-stat-pending').textContent   = d.pending;
+                if (el('task-stat-completed')) el('task-stat-completed').textContent = d.completed;
+            });
+    }
+
+    // Auto-refresh stats every 30 seconds
+    setInterval(refreshTaskStats, 30000);
+});
+</script>
+{% endblock %}

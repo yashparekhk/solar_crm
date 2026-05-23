@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Delete Task — Solar CRM{% endblock %}
+{% block breadcrumb %}Tasks / Delete{% endblock %}
+
+{% block content %}
+<div class="crm-card" style="max-width:480px;">
+    <div class="p-4 text-center">
+        <div style="width:56px;height:56px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <i class="fas fa-trash" style="color:#dc2626;font-size:1.3rem;"></i>
+        </div>
+        <h5 class="fw-bold mb-1">Delete Task?</h5>
+        <p style="color:#64748b;font-size:0.85rem;">
+            Are you sure you want to delete <strong>"{{ task.title }}"</strong>?
+            This cannot be undone.
+        </p>
+        <form method="post" class="d-flex gap-2 justify-content-center mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" style="border-radius:7px;font-weight:600;">
+                Yes, Delete
+            </button>
+            <a href="{% url 'tasks_list_view' %}"
+               class="btn" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;font-weight:600;">
+                Cancel
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

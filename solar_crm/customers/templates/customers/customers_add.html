@@ -1,25 +1,35 @@
 {% extends 'base.html' %}
 {% block title %}Add Customer — Solar CRM{% endblock %}
+{% block breadcrumb %}Customers / Add Customer{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
-        <h4 class="fw-bold mb-0" style="color:var(--secondary);">➕ Add Customer</h4>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-plus-circle me-2" style="color:var(--primary);"></i>Add Customer
+        </h4>
         <small class="text-muted">Fill in the customer details below</small>
     </div>
-    <a href="{% url 'customers_list_view' %}" class="btn btn-outline-secondary btn-sm">
+    <a href="{% url 'customers_list_view' %}"
+       class="btn"
+       style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;
+              border-radius:7px;padding:7px 16px;font-size:0.825rem;font-weight:600;">
         <i class="fas fa-arrow-left me-1"></i> Back
     </a>
 </div>
 
 <div class="crm-card">
     <div class="crm-card-header">
-        <h5><i class="fas fa-users me-2" style="color:var(--primary);"></i>Customer Information</h5>
+        <h5>
+            <i class="fas fa-building-user"></i> Customer Information
+        </h5>
     </div>
-    <div class="crm-card-body">
+    <div class="p-4">
         <form method="POST">
             {% csrf_token %}
             <div class="row g-3">
+
+                <!-- Row 1: Name | Phone | Email -->
                 <div class="col-md-4">
                     <label class="form-label">Full Name *</label>
                     <input type="text" name="name" class="form-control"
@@ -35,28 +45,40 @@
                     <input type="email" name="email" class="form-control"
                            placeholder="Email address">
                 </div>
-                <div class="col-md-4">
+
+                <!-- Row 2: City | System Size -->
+                <div class="col-md-6">
                     <label class="form-label">City *</label>
                     <input type="text" name="city" class="form-control"
                            placeholder="City" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label">System Size (kW) *</label>
                     <input type="number" name="system_size" class="form-control"
                            placeholder="e.g. 5.5" step="0.01" required>
                 </div>
-                <div class="col-md-4">
+
+                <!-- Row 3: Address — full width textarea -->
+                <div class="col-12">
                     <label class="form-label">Address *</label>
-                    <input type="text" name="address" class="form-control"
-                           placeholder="Full address" required>
+                    <textarea name="address" class="form-control" rows="3"
+                              placeholder="e.g. 12, Green Park Society, Ring Road, Surat - 395001"
+                              required></textarea>
                 </div>
-                <div class="col-12 d-flex gap-2 mt-2">
-                    <button type="submit" class="btn btn-solar px-4">
+
+                <!-- Buttons -->
+                <div class="col-12 d-flex gap-2 mt-1">
+                    <button type="submit" class="btn btn-solar">
                         <i class="fas fa-save me-1"></i> Save Customer
                     </button>
                     <a href="{% url 'customers_list_view' %}"
-                       class="btn btn-outline-secondary px-4">Cancel</a>
+                       class="btn"
+                       style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;
+                              border-radius:7px;padding:8px 16px;font-size:0.825rem;font-weight:600;">
+                        Cancel
+                    </a>
                 </div>
+
             </div>
         </form>
     </div>

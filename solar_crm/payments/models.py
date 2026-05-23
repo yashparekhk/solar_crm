@@ -1,5 +1,8 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 from customers.models import Customer
+
+User = get_user_model()
 
 PAYMENT_STATUS_CHOICES = [
     ('paid',    'Paid'),
@@ -22,6 +25,12 @@ class Payment(models.Model):
     payment_date = models.DateField(null=True, blank=True, verbose_name='Payment Date')
     method       = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, blank=True)
     notes        = models.TextField(blank=True)
+    created_by   = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='payments_created'
+    )
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
 

@@ -39,6 +39,7 @@ def payments_add_view(request):
             payment_date = request.POST.get('payment_date') or None,
             method       = request.POST.get('method', ''),
             notes        = request.POST.get('notes', '').strip(),
+            created_by   = request.user,
         )
         messages.success(request, 'Payment added successfully!')
         return redirect('payments_list_view')

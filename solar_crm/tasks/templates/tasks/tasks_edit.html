@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Edit Task — Solar CRM{% endblock %}
+{% block breadcrumb %}Tasks / Edit{% endblock %}
+
+{% block content %}
+
+<div class="mb-3">
+    <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+        <i class="fas fa-pen me-2" style="color:var(--primary);"></i>Edit Task
+    </h4>
+</div>
+
+<div class="crm-card" style="max-width:720px;">
+    <div class="crm-card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+
+                <div class="col-12">
+                    <label class="form-label">Title *</label>
+                    <input type="text" name="title" class="form-control"
+                           value="{{ task.title }}" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Type</label>
+                    <select name="task_type" class="form-select">
+                        <option value="call"     {% if task.task_type == 'call' %}selected{% endif %}>📞 Call Reminder</option>
+                        <option value="followup" {% if task.task_type == 'followup' %}selected{% endif %}>🔄 Follow-up</option>
+                        <option value="task"     {% if task.task_type == 'task' %}selected{% endif %}>✅ General Task</option>
+                        <option value="meeting"  {% if task.task_type == 'meeting' %}selected{% endif %}>👥 Meeting</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Priority</label>
+                    <select name="priority" class="form-select">
+                        <option value="low"    {% if task.priority == 'low' %}selected{% endif %}>🟢 Low</option>
+                        <option value="medium" {% if task.priority == 'medium' %}selected{% endif %}>🟡 Medium</option>
+                        <option value="high"   {% if task.priority == 'high' %}selected{% endif %}>🔴 High</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="pending"     {% if task.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed"   {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Assign To</label>
+                    <select name="assigned_to" class="form-select">
+                        {% for user in users %}
+                        <option value="{{ user.pk }}"
+                            {% if task.assigned_to == user %}selected{% endif %}>
+                            {{ user.get_full_name|default:user.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" name="due_date" class="form-control"
+                           value="{{ task.due_date|date:'Y-m-d' }}" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Due Time</label>
+                    <input type="time" name="due_time" class="form-control"
+                           value="{{ task.due_time|time:'H:i'|default:'' }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Related Lead</label>
+                    <select name="related_lead" class="form-select">
+                        <option value="">— None —</option>
+                        {% for lead in leads %}
+                        <option value="{{ lead.pk }}"
+                            {% if task.related_lead == lead %}selected{% endif %}>
+                            {{ lead.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Related Customer</label>
+                    <select name="related_customer" class="form-select">
+                        <option value="">— None —</option>
+                        {% for customer in customers %}
+                        <option value="{{ customer.pk }}"
+                            {% if task.related_customer == customer %}selected{% endif %}>
+                            {{ customer.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control"
+                              rows="3">{{ task.description }}</textarea>
+                </div>
+
+                <div class="col-12 d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-solar">
+                        <i class="fas fa-save me-1"></i> Save Changes
+                    </button>
+                    <a href="{% url 'tasks_list_view' %}"
+                       class="btn"
+                       style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;padding:8px 16px;font-size:0.825rem;font-weight:600;">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -11,9 +11,10 @@
         <small class="text-muted">Fill in the details and assign to an employee</small>
     </div>
     <a href="{% url 'leads_list_view' %}"
-       class="btn btn-solar btn-sm"
-       style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
-        <i class="fas fa-arrow-left"></i> Back
+       class="btn"
+       style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;
+              border-radius:7px;padding:7px 16px;font-size:0.825rem;font-weight:600;">
+        <i class="fas fa-arrow-left me-1"></i> Back
     </a>
 </div>
 
@@ -21,10 +22,12 @@
     <div class="crm-card-header">
         <h5><i class="fas fa-filter"></i> Lead Information</h5>
     </div>
-    <div class="crm-card-body">
+    <div class="p-4">
         <form method="POST">
             {% csrf_token %}
             <div class="row g-3">
+
+                <!-- Row 1: Name | Phone | Email -->
                 <div class="col-md-4">
                     <label class="form-label">Full Name *</label>
                     <input type="text" name="name" class="form-control"
@@ -40,6 +43,8 @@
                     <input type="email" name="email" class="form-control"
                            placeholder="Email address">
                 </div>
+
+                <!-- Row 2: Source | Status | Assign To -->
                 <div class="col-md-4">
                     <label class="form-label">Source</label>
                     <select name="source" class="form-select">
@@ -71,26 +76,34 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-4">
+
+                <!-- Row 3: Address — full width textarea -->
+                <div class="col-12">
                     <label class="form-label">Address</label>
-                    <input type="text" name="address" class="form-control"
-                           placeholder="Address">
+                    <textarea name="address" class="form-control" rows="3"
+                              placeholder="e.g. 12, Green Park Society, Ring Road, Surat - 395001"></textarea>
                 </div>
+
+                <!-- Row 4: Notes — full width -->
                 <div class="col-12">
                     <label class="form-label">Notes</label>
-                    <textarea name="notes" class="form-control" rows="2"
+                    <textarea name="notes" class="form-control" rows="3"
                               placeholder="Any notes..."></textarea>
                 </div>
-                <div class="col-12 d-flex gap-2 mt-2">
-                    <button type="submit" class="btn btn-solar px-4">
+
+                <!-- Buttons -->
+                <div class="col-12 d-flex gap-2 mt-1">
+                    <button type="submit" class="btn btn-solar">
                         <i class="fas fa-save me-1"></i> Save Lead
                     </button>
                     <a href="{% url 'leads_list_view' %}"
-                       class="btn btn-solar px-4"
-                       style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+                       class="btn"
+                       style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;
+                              border-radius:7px;padding:8px 16px;font-size:0.825rem;font-weight:600;">
                         Cancel
                     </a>
                 </div>
+
             </div>
         </form>
     </div>

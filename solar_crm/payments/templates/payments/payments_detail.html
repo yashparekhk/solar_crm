@@ -12,6 +12,12 @@
         <small class="text-muted">{{ payment_instance.customer.name }}</small>
     </div>
     <div class="d-flex gap-2">
+        <!-- Print Button -->
+        <button onclick="printReceipt()"
+                class="btn btn-solar btn-sm"
+                style="background:#f0fdf4;color:#15803d !important;border:1px solid #bbf7d0;">
+            <i class="fas fa-print"></i> Print Receipt
+        </button>
         <a href="{% url 'payments_edit_view' payment_instance.pk %}"
            class="btn btn-solar btn-sm"
            style="background:#fffbeb;color:#92400e !important;border:1px solid #fde68a;">
@@ -25,7 +31,8 @@
     </div>
 </div>
 
-<div class="row g-3">
+<!-- ── SCREEN VIEW ── -->
+<div class="row g-3" id="screen-view">
     <div class="col-lg-5">
         <div class="crm-card">
             <div class="crm-card-header">
@@ -105,12 +112,142 @@
                 <h5><i class="fas fa-note-sticky"></i> Notes</h5>
             </div>
             <div class="crm-card-body">
-                <p style="font-size:0.855rem;color:#374151;margin:0;line-height:1.7;white-space:pre-wrap;">
-                    {{ payment_instance.notes }}
-                </p>
+                <p style="font-size:0.855rem;color:#374151;margin:0;line-height:1.7;
+                           white-space:pre-wrap;">{{ payment_instance.notes }}</p>
             </div>
         </div>
         {% endif %}
     </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════
+     PRINTABLE RECEIPT — hidden on screen, shown on print
+═══════════════════════════════════════════════════════ -->
+<div id="print-receipt" style="display:none;">
+    <div class="receipt-wrapper">
+
+        <!-- Header -->
+        <div class="receipt-header">
+            <div class="receipt-brand">
+                <div class="receipt-brand-icon">⚡</div>
+                <div>
+                    <div class="receipt-brand-name">Solar CRM</div>
+                    <div class="receipt-brand-sub">Payment Receipt</div>
+                </div>
+            </div>
+            <div class="receipt-meta">
+                <div class="receipt-meta-row">
+                    <span class="receipt-meta-label">Receipt No.</span>
+                    <span class="receipt-meta-value">#PAY-{{ payment_instance.pk|stringformat:"04d" }}</span>
+                </div>
+                <div class="receipt-meta-row">
+                    <span class="receipt-meta-label">Date</span>
+                    <span class="receipt-meta-value">{{ payment_instance.created_at|date:"d M Y" }}</span>
+                </div>
+                <div class="receipt-meta-row">
+                    <span class="receipt-meta-label">Status</span>
+                    <span class="receipt-status receipt-status-{{ payment_instance.status }}">
+                        {{ payment_instance.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <!-- Customer Info -->
+        <div class="receipt-section-title">Customer Information</div>
+        <div class="receipt-grid">
+            <div class="receipt-field">
+                <div class="receipt-field-label">Full Name</div>
+                <div class="receipt-field-value">{{ payment_instance.customer.name }}</div>
+            </div>
+            <div class="receipt-field">
+                <div class="receipt-field-label">Phone Number</div>
+                <div class="receipt-field-value">{{ payment_instance.customer.phone }}</div>
+            </div>
+            <div class="receipt-field">
+                <div class="receipt-field-label">City</div>
+                <div class="receipt-field-value">{{ payment_instance.customer.city }}</div>
+            </div>
+            <div class="receipt-field">
+                <div class="receipt-field-label">Solar System Size</div>
+                <div class="receipt-field-value">{{ payment_instance.customer.system_size }} kW</div>
+            </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <!-- Payment Details -->
+        <div class="receipt-section-title">Payment Details</div>
+        <div class="receipt-grid">
+            <div class="receipt-field">
+                <div class="receipt-field-label">Payment Method</div>
+                <div class="receipt-field-value">{{ payment_instance.get_method_display|default:"Not specified" }}</div>
+            </div>
+            <div class="receipt-field">
+                <div class="receipt-field-label">Payment Date</div>
+                <div class="receipt-field-value">{{ payment_instance.payment_date|date:"d M Y"|default:"Not set" }}</div>
+            </div>
+            <div class="receipt-field">
+                <div class="receipt-field-label">Recorded On</div>
+                <div class="receipt-field-value">{{ payment_instance.created_at|date:"d M Y" }}</div>
+            </div>
+            <div class="receipt-field">
+                <div class="receipt-field-label">Recorded By</div>
+                <div class="receipt-field-value">{{ payment_instance.created_by.get_full_name|default:"—" }}</div>
+            </div>
+        </div>
+
+        {% if payment_instance.notes %}
+        <div class="receipt-divider"></div>
+        <div class="receipt-section-title">Notes</div>
+        <div class="receipt-notes">{{ payment_instance.notes }}</div>
+        {% endif %}
+
+        <div class="receipt-divider"></div>
+
+        <!-- Amount Box -->
+        <div class="receipt-amount-box">
+            <div class="receipt-amount-label">Total Amount Paid</div>
+            <div class="receipt-amount-value">₹{{ payment_instance.amount }}</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="receipt-footer">
+            <div>Thank you for your payment. This is a computer-generated receipt.</div>
+            <div style="margin-top:4px;color:#94a3b8;">
+                Generated on {% now "d M Y, h:i A" %} — Solar CRM
+            </div>
+        </div>
+
+        <!-- Signature row -->
+        <div class="receipt-sig-row">
+            <div class="receipt-sig-box">
+                <div class="receipt-sig-line"></div>
+                <div class="receipt-sig-label">Customer Signature</div>
+            </div>
+            <div class="receipt-sig-box">
+                <div class="receipt-sig-line"></div>
+                <div class="receipt-sig-label">Authorised Signatory</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function printReceipt() {
+    // Show receipt, hide screen view
+    document.getElementById('screen-view').style.display  = 'none';
+    document.getElementById('print-receipt').style.display = 'block';
+    window.print();
+    // Restore after print dialog closes
+    document.getElementById('screen-view').style.display  = '';
+    document.getElementById('print-receipt').style.display = 'none';
+}
+</script>
 {% endblock %}

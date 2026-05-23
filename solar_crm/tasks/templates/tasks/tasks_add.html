@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}New Task — Solar CRM{% endblock %}
+{% block breadcrumb %}Tasks / New{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-check-circle me-2" style="color:var(--primary);"></i>New Task
+        </h4>
+        <small class="text-muted">Create a call reminder, follow-up or team task</small>
+    </div>
+    <a href="{% url 'tasks_list_view' %}"
+       class="btn"
+       style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;
+              border-radius:7px;padding:7px 16px;font-size:0.825rem;font-weight:600;">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <h5>
+            <i class="fas fa-check-circle"></i> Task Information
+        </h5>
+    </div>
+    <div class="p-4">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+
+                <!-- Title — full width -->
+                <div class="col-12">
+                    <label class="form-label">Title *</label>
+                    <input type="text" name="title" class="form-control"
+                           placeholder="e.g. Call Yash regarding quotation" required>
+                </div>
+
+                <!-- Type | Priority | Due Date | Due Time -->
+                <div class="col-md-3">
+                    <label class="form-label">Type *</label>
+                    <select name="task_type" class="form-select">
+                        <option value="call">Call Reminder</option>
+                        <option value="followup">Follow-up</option>
+                        <option value="task" selected>General Task</option>
+                        <option value="meeting">Meeting</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Priority *</label>
+                    <select name="priority" class="form-select">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Due Date *</label>
+                    <input type="date" name="due_date" class="form-control"
+                           min="{{ today }}" required>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Due Time <span class="text-muted fw-normal">(optional)</span></label>
+                    <input type="time" name="due_time" class="form-control">
+                </div>
+
+                <!-- Assign To — full width -->
+                <div class="col-12">
+                    <label class="form-label">Assign To *</label>
+                    <select name="assigned_to" class="form-select" required>
+                        <option value="">— Select user —</option>
+                        {% for u in users %}
+                        <option value="{{ u.pk }}"
+                            {% if u == request.user %}selected{% endif %}>
+                            {{ u.get_full_name|default:u.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Related Lead | Related Customer -->
+                <div class="col-md-6">
+                    <label class="form-label">Related Lead <span class="text-muted fw-normal">(optional)</span></label>
+                    <select name="related_lead" class="form-select">
+                        <option value="">— None —</option>
+                        {% for lead in leads %}
+                        <option value="{{ lead.pk }}">{{ lead.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Related Customer <span class="text-muted fw-normal">(optional)</span></label>
+                    <select name="related_customer" class="form-select">
+                        <option value="">— None —</option>
+                        {% for customer in customers %}
+                        <option value="{{ customer.pk }}">{{ customer.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Description — full width -->
+                <div class="col-12">
+                    <label class="form-label">Description <span class="text-muted fw-normal">(optional)</span></label>
+                    <textarea name="description" class="form-control" rows="3"
+                              placeholder="Add notes or context..."></textarea>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12 d-flex gap-2 mt-1">
+                    <button type="submit" class="btn btn-solar">
+                        <i class="fas fa-plus me-1"></i> Create Task
+                    </button>
+                    <a href="{% url 'tasks_list_view' %}"
+                       class="btn"
+                       style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;
+                              border-radius:7px;padding:8px 16px;font-size:0.825rem;font-weight:600;">
+                        Cancel
+                    </a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

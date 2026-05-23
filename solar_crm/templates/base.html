@@ -96,14 +96,31 @@
                     <span class="sidebar-text">Support Tickets</span>
                 </a>
             </li>
+            <li>
+                <a href="{% url 'tasks_list_view' %}"
+                   class="{% if 'tasks' in request.path %}active{% endif %}"
+                   title="Tasks & Follow-ups">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="sidebar-text">Tasks</span>
+                </a>
+            </li>
 
             <!-- Data section -->
             <li class="menu-header sidebar-text">Data</li>
             <li>
+                {% if global_total_leads > 0 %}
                 <a href="{% url 'export_leads_excel' %}" title="Export Leads">
                     <i class="fas fa-arrow-up-from-bracket"></i>
                     <span class="sidebar-text">Export Leads</span>
                 </a>
+                {% else %}
+                <a href="#" title="No leads to export"
+                   onclick="showToast('No leads to export yet', 'info'); return false;"
+                   style="opacity:0.4; cursor:not-allowed;">
+                    <i class="fas fa-arrow-up-from-bracket"></i>
+                    <span class="sidebar-text">Export Leads</span>
+                </a>
+                {% endif %}
             </li>
             {% if perms_map.can_import %}
             <li>
@@ -173,7 +190,6 @@
                     </div>
                     <div class="nav-dropdown-menu" id="avatarMenu">
 
-                        <!-- User info header -->
                         <div class="nav-dropdown-header">
                             <div class="avatar-circle"
                                  style="width:42px;height:42px;font-size:0.9rem;flex-shrink:0;">
@@ -341,12 +357,164 @@ function showToast(message, type = 'success') {
     document.getElementById('toastContainer').appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
 }
+
+// ══ AUTO CAPITALIZE FIRST LETTER ══
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Fields where every word should be capitalized
+    const wordCapFields = ['name', 'city', 'title', 'full_name', 'first_name', 'last_name'];
+
+    // Fields to skip entirely
+    const skipFields = ['email', 'password', 'phone', 'amount',
+                        'system_size', 'csrfmiddlewaretoken', 'search'];
+
+    document.querySelectorAll('input[type="text"], input[type="search"], textarea').forEach(function (input) {
+        const fieldName = (input.name || input.id || '').toLowerCase();
+
+        // Skip password/email/number fields
+        if (input.type === 'email' || input.type === 'password' ||
+            input.type === 'number' || input.readOnly) return;
+
+        // Skip specific fields
+        if (skipFields.some(function(f) { return fieldName.includes(f); })) return;
+
+        // Set autocapitalize for mobile keyboards
+        input.setAttribute('autocapitalize',
+            wordCapFields.some(function(f) { return fieldName.includes(f); })
+                ? 'words' : 'sentences'
+        );
+
+        // Word capitalize — fires on every keystroke for name/city/title fields
+        if (wordCapFields.some(function(f) { return fieldName.includes(f); })) {
+            input.addEventListener('input', function () {
+                const pos  = this.selectionStart;
+                this.value = this.value.replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+                this.setSelectionRange(pos, pos);
+            });
+        } else {
+            // Sentence capitalize — first letter only, fires on blur
+            input.addEventListener('blur', function () {
+                if (this.value.length > 0) {
+                    this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
+                }
+            });
+        }
+    });
+});
+
+// ══ GLOBAL AUTO-REFRESH SYSTEM ══
+(function () {
+
+    const navbar = document.querySelector('.top-right');
+    if (navbar) {
+        const dot = document.createElement('span');
+        dot.id = 'live-dot';
+        dot.title = 'Live data';
+        dot.style.cssText = `
+            width:8px; height:8px; border-radius:50%;
+            background:#22c55e; display:inline-block;
+            animation: livePulse 2s infinite;
+            flex-shrink:0; margin-right:2px;
+        `;
+        navbar.insertBefore(dot, navbar.firstChild);
+    }
+
+    function updateSidebarBadge(count) {
+        let badge = document.getElementById('sidebar-task-badge');
+        const taskLink = document.querySelector('a[href*="/tasks/"]');
+        if (!taskLink) return;
+
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.id = 'sidebar-task-badge';
+            badge.style.cssText = `
+                background:#ef4444; color:white;
+                font-size:0.6rem; font-weight:700;
+                padding:1px 5px; border-radius:10px;
+                margin-left:auto; flex-shrink:0;
+            `;
+            taskLink.style.display = 'flex';
+            taskLink.appendChild(badge);
+        }
+
+        if (count > 0) {
+            badge.textContent    = count;
+            badge.style.display  = 'inline-block';
+        } else {
+            badge.style.display  = 'none';
+        }
+    }
+
+    function globalRefresh() {
+        fetch('/api/dashboard-stats/', { method: 'GET' })
+            .then(function (res) { return res.json(); })
+            .then(function (json) {
+                if (!json.success) return;
+                var d = json.data;
+
+                var dot = document.getElementById('live-dot');
+                if (dot) {
+                    dot.style.background = '#2563eb';
+                    setTimeout(function () { dot.style.background = '#22c55e'; }, 400);
+                }
+
+                updateSidebarBadge(d.task_overdue || 0);
+
+                var el = function (id) { return document.getElementById(id); };
+                if (el('stat-leads'))         el('stat-leads').textContent         = d.total_leads;
+                if (el('stat-customers'))     el('stat-customers').textContent     = d.total_customers;
+                if (el('stat-quotations'))    el('stat-quotations').textContent    = d.total_quotations;
+                if (el('stat-installations')) el('stat-installations').textContent = d.total_installations;
+                if (el('stat-bills'))         el('stat-bills').textContent         = d.pending_payments;
+                if (el('stat-revenue'))       el('stat-revenue').textContent       = '₹' + d.total_revenue;
+
+                if (el('legend-new'))         el('legend-new').textContent       = d.leads_new;
+                if (el('legend-contacted'))   el('legend-contacted').textContent = d.leads_contacted;
+                if (el('legend-qualified'))   el('legend-qualified').textContent = d.leads_qualified;
+                if (el('legend-proposal'))    el('legend-proposal').textContent  = d.leads_proposal;
+                if (el('legend-won'))         el('legend-won').textContent       = d.leads_won;
+
+                if (typeof Chart !== 'undefined') {
+                    var chart = Chart.getChart('leadsDonut');
+                    if (chart) {
+                        chart.data.datasets[0].data = [
+                            d.leads_new, d.leads_contacted,
+                            d.leads_qualified, d.leads_proposal, d.leads_won
+                        ];
+                        chart.update('none');
+                    }
+                }
+
+                if (el('qa-overdue-count')) el('qa-overdue-count').textContent = d.task_overdue || 0;
+                if (el('qa-today-count'))   el('qa-today-count').textContent   = d.task_today   || 0;
+                if (el('task-stat-today'))     el('task-stat-today').textContent     = d.task_today   || 0;
+                if (el('task-stat-overdue'))   el('task-stat-overdue').textContent   = d.task_overdue || 0;
+
+                if (typeof window.pageRefresh === 'function') {
+                    window.pageRefresh(d);
+                }
+            })
+            .catch(function (err) {
+                var dot = document.getElementById('live-dot');
+                if (dot) dot.style.background = '#94a3b8';
+                console.log('Refresh error:', err);
+            });
+    }
+
+    globalRefresh();
+    setInterval(globalRefresh, 8000);
+
+})();
 </script>
 
 <style>
 @keyframes slideInToast {
     from { opacity:0; transform:translateX(20px); }
     to   { opacity:1; transform:translateX(0); }
+}
+@keyframes livePulse {
+    0%, 100% { opacity:1; transform:scale(1); }
+    50%       { opacity:0.5; transform:scale(0.8); }
 }
 </style>
 

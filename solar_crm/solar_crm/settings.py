@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'installations',
     'payments',
     'tickets',
+    'tasks',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 # Add this line
                 'accounts.context_processors.user_permissions',
+                'solar_crm.context_processors.global_context',
             ],
         },
     },

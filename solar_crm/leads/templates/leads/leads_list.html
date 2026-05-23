@@ -4,7 +4,6 @@
 
 {% block content %}
 
-<!-- CSRF token for AJAX POST requests -->
 {% csrf_token %}
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -20,12 +19,43 @@
             {% endif %}
         </small>
     </div>
-    <div class="d-flex gap-2">
+
+    <!-- Action buttons -->
+    <div class="d-flex gap-2 flex-wrap">
+<!-- Export — only if leads exist -->
+{% if leads_list %}
+<a href="{% url 'export_leads_excel' %}"
+   class="btn btn-sm"
+   style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;
+          border-radius:7px;padding:6px 14px;font-size:0.8rem;font-weight:600;">
+    <i class="fas fa-arrow-up-from-bracket me-1"></i> Export
+</a>
+{% else %}
+<button class="btn btn-sm" disabled
+        title="No leads to export"
+        style="background:#f8fafc;color:#cbd5e1;border:1px solid #e2e8f0;
+               border-radius:7px;padding:6px 14px;font-size:0.8rem;font-weight:600;
+               cursor:not-allowed;">
+    <i class="fas fa-arrow-up-from-bracket me-1"></i> Export
+</button>
+{% endif %}
+        <!-- Import — admin only -->
+        {% if perms_map.can_import %}
+        <a href="{% url 'import_leads_view' %}"
+           class="btn btn-sm"
+           style="background:#fffbeb;color:#92400e;border:1px solid #fde68a;
+                  border-radius:7px;padding:6px 14px;font-size:0.8rem;font-weight:600;">
+            <i class="fas fa-file-arrow-up me-1"></i> Import
+        </a>
+        {% endif %}
+
+        <!-- New Lead -->
         {% if perms_map.can_create_lead %}
         <a href="{% url 'leads_add_view' %}" class="btn btn-solar btn-sm">
             <i class="fas fa-plus"></i> New Lead
         </a>
         {% endif %}
+
     </div>
 </div>
 
@@ -70,10 +100,9 @@
                     <td style="color:#64748b;">{{ lead.email|default:"—" }}</td>
                     <td style="color:#64748b;">{{ lead.source|default:"—" }}</td>
 
-                    <!-- ── STATUS CELL ── -->
+                    <!-- Status cell -->
                     <td>
                         {% if perms_map.is_admin or lead.assigned_to == request.user %}
-                        <!-- Editable dropdown for admin / assigned employee -->
                         <select class="status-select status-{{ lead.status }}"
                                 data-lead-id="{{ lead.pk }}"
                                 title="Click to change status">
@@ -85,7 +114,6 @@
                             <option value="lost"      {% if lead.status == 'lost' %}selected{% endif %}>Lost</option>
                         </select>
                         {% else %}
-                        <!-- Read-only badge for others -->
                         <span class="status-badge status-{{ lead.status }}" style="font-size:0.68rem;">
                             {{ lead.get_status_display }}
                         </span>
@@ -107,7 +135,10 @@
                     </td>
                     {% endif %}
 
-                    <td style="color:#94a3b8;font-size:0.78rem;">{{ lead.created_at|date:"d M Y" }}</td>
+                    <td style="color:#94a3b8;font-size:0.78rem;">
+                        {{ lead.created_at|date:"d M Y" }}
+                    </td>
+
                     <td>
                         <div class="d-flex gap-1">
                             <!-- View -->
@@ -167,7 +198,8 @@
                             No leads assigned to you yet. Contact your admin.
                         {% else %}
                             No leads found.
-                            <a href="{% url 'leads_add_view' %}" style="color:var(--primary);">Add your first lead</a>
+                            <a href="{% url 'leads_add_view' %}"
+                               style="color:var(--primary);">Add your first lead</a>
                         {% endif %}
                     </td>
                 </tr>
@@ -210,12 +242,11 @@ $(document).ready(function () {
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
     $(document).on('change', '.status-select', function () {
-        const select    = this;
-        const leadId    = select.dataset.leadId;
-        const newStatus = select.value;
-        const prevStatus = select.dataset.prevStatus || select.querySelector('[selected]')?.value;
+        const select     = this;
+        const leadId     = select.dataset.leadId;
+        const newStatus  = select.value;
+        const prevStatus = select.dataset.prevStatus || select.value;
 
-        // Disable while saving
         select.disabled = true;
 
         fetch(`/api/leads/${leadId}/status/`, {
@@ -230,13 +261,10 @@ $(document).ready(function () {
         .then(data => {
             select.disabled = false;
             if (data.success) {
-                // Update dropdown colour class
-                select.className = `status-select status-${newStatus}`;
-                // Save new value as prev
+                select.className          = `status-select status-${newStatus}`;
                 select.dataset.prevStatus = newStatus;
                 showToast(`Status updated to "${data.status_label}"`, 'success');
             } else {
-                // Revert to previous value on failure
                 if (prevStatus) select.value = prevStatus;
                 showToast('Failed to update status', 'error');
             }
@@ -248,7 +276,6 @@ $(document).ready(function () {
         });
     });
 
-    // Store initial value on focus so we can revert on error
     $(document).on('focus', '.status-select', function () {
         this.dataset.prevStatus = this.value;
     });

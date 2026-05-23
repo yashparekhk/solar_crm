@@ -15,4 +15,5 @@ urlpatterns = [
     path('',               include('accounts.urls')),
     path('api/dashboard-stats/',       dashboard_views.dashboard_stats_api,    name='dashboard_stats_api'),
     path('api/leads/<int:pk>/status/', dashboard_views.update_lead_status_api, name='update_lead_status_api'),
+    path('tasks/', include('tasks.urls')),
 ]
