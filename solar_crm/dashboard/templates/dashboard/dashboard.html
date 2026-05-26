@@ -91,7 +91,9 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <div class="stat-label">Revenue</div>
-                    <div class="stat-number" id="stat-revenue" style="font-size:1.3rem;">₹{{ total_revenue }}</div>
+                    <div class="stat-number" id="stat-revenue" style="font-size:1.3rem;">
+                        ₹{{ total_revenue }}
+                    </div>
                     <div class="stat-change up">
                         <i class="fas fa-arrow-trend-up me-1"></i>Collected
                     </div>
@@ -112,186 +114,246 @@
         <div class="crm-card h-100">
             <div class="crm-card-header">
                 <h5><i class="fas fa-chart-pie"></i> Leads Overview</h5>
+                <span style="font-size:0.72rem;color:#94a3b8;font-weight:500;">
+                    Live · updates every 8s
+                </span>
             </div>
             <div class="d-flex align-items-center justify-content-center gap-4 p-3">
-                <div style="width:180px; height:180px; position:relative; flex-shrink:0;">
+
+                <!-- Chart with total in center -->
+                <div style="width:180px;height:180px;position:relative;flex-shrink:0;">
                     <canvas id="leadsDonut"></canvas>
+                    <div style="position:absolute;top:50%;left:50%;
+                                transform:translate(-50%,-50%);
+                                text-align:center;pointer-events:none;">
+                        <div id="donut-total"
+                             style="font-size:1.7rem;font-weight:800;
+                                    color:#0f172a;line-height:1;">
+                            {{ leads_new|add:leads_contacted|add:leads_qualified|add:leads_proposal|add:leads_won }}
+                        </div>
+                        <div style="font-size:0.6rem;color:#94a3b8;font-weight:600;
+                                    text-transform:uppercase;letter-spacing:0.5px;">
+                            Total
+                        </div>
+                    </div>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <div class="d-flex align-items-center gap-2">
-                        <span style="width:10px;height:10px;border-radius:50%;background:#2563eb;display:inline-block;"></span>
-                        <span style="font-size:0.82rem;color:#64748b;">New</span>
-                        <strong id="legend-new" style="margin-left:auto;padding-left:16px;">{{ leads_new }}</strong>
+
+                <!-- Legend as coloured pills -->
+                <div style="display:flex;flex-direction:column;gap:7px;min-width:165px;">
+
+                    <div class="lead-legend-pill" style="background:#eff6ff;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:8px;height:8px;border-radius:50%;
+                                         background:#2563eb;flex-shrink:0;"></span>
+                            <span style="font-size:0.78rem;color:#374151;font-weight:500;">New</span>
+                        </div>
+                        <span id="legend-new" class="lead-legend-num" style="color:#2563eb;">
+                            {{ leads_new }}
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
-                        <span style="font-size:0.82rem;color:#64748b;">Contacted</span>
-                        <strong id="legend-contacted" style="margin-left:auto;padding-left:16px;">{{ leads_contacted }}</strong>
+
+                    <div class="lead-legend-pill" style="background:#f0fdf4;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:8px;height:8px;border-radius:50%;
+                                         background:#22c55e;flex-shrink:0;"></span>
+                            <span style="font-size:0.78rem;color:#374151;font-weight:500;">Contacted</span>
+                        </div>
+                        <span id="legend-contacted" class="lead-legend-num" style="color:#16a34a;">
+                            {{ leads_contacted }}
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
-                        <span style="font-size:0.82rem;color:#64748b;">Qualified</span>
-                        <strong id="legend-qualified" style="margin-left:auto;padding-left:16px;">{{ leads_qualified }}</strong>
+
+                    <div class="lead-legend-pill" style="background:#fffbeb;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:8px;height:8px;border-radius:50%;
+                                         background:#f59e0b;flex-shrink:0;"></span>
+                            <span style="font-size:0.78rem;color:#374151;font-weight:500;">Qualified</span>
+                        </div>
+                        <span id="legend-qualified" class="lead-legend-num" style="color:#d97706;">
+                            {{ leads_qualified }}
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span style="width:10px;height:10px;border-radius:50%;background:#a855f7;display:inline-block;"></span>
-                        <span style="font-size:0.82rem;color:#64748b;">Proposal</span>
-                        <strong id="legend-proposal" style="margin-left:auto;padding-left:16px;">{{ leads_proposal }}</strong>
+
+                    <div class="lead-legend-pill" style="background:#faf5ff;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:8px;height:8px;border-radius:50%;
+                                         background:#a855f7;flex-shrink:0;"></span>
+                            <span style="font-size:0.78rem;color:#374151;font-weight:500;">Proposal</span>
+                        </div>
+                        <span id="legend-proposal" class="lead-legend-num" style="color:#9333ea;">
+                            {{ leads_proposal }}
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
-                        <span style="font-size:0.82rem;color:#64748b;">Won</span>
-                        <strong id="legend-won" style="margin-left:auto;padding-left:16px;">{{ leads_won }}</strong>
+
+                    <div class="lead-legend-pill" style="background:#fff1f2;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:8px;height:8px;border-radius:50%;
+                                         background:#ef4444;flex-shrink:0;"></span>
+                            <span style="font-size:0.78rem;color:#374151;font-weight:500;">Won</span>
+                        </div>
+                        <span id="legend-won" class="lead-legend-num" style="color:#dc2626;">
+                            {{ leads_won }}
+                        </span>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
-<!-- Right: Quick Actions -->
-<div class="col-lg-6">
-    <div class="crm-card h-100">
-        <div class="crm-card-header">
-            <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
-        </div>
-        <div class="p-3">
-            <div class="row g-2">
 
-                <div class="col-6">
-                    <a href="{% url 'leads_add_view' %}" class="text-decoration-none">
-                        <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
-                             style="background:#eff6ff; border:1px solid #bfdbfe;">
-                            <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                                 style="width:40px;height:40px;background:#2563eb;">
-                                <i class="fas fa-filter text-white" style="font-size:0.85rem;"></i>
-                            </div>
-                            <div>
-                                <div class="fw-semibold text-dark" style="font-size:.85rem;">New Lead</div>
-                                <div style="font-size:.72rem;color:#64748b;">Add to pipeline</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-6">
-                    <a href="{% url 'customers_add_view' %}" class="text-decoration-none">
-                        <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
-                             style="background:#f0fdf4; border:1px solid #bbf7d0;">
-                            <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                                 style="width:40px;height:40px;background:#15803d;">
-                                <i class="fas fa-building-user text-white" style="font-size:0.85rem;"></i>
-                            </div>
-                            <div>
-                                <div class="fw-semibold text-dark" style="font-size:.85rem;">Add Customer</div>
-                                <div style="font-size:.72rem;color:#64748b;">New account</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-6">
-                    <a href="{% url 'quotations_add_view' %}" class="text-decoration-none">
-                        <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
-                             style="background:#fffbeb; border:1px solid #fde68a;">
-                            <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                                 style="width:40px;height:40px;background:#d97706;">
-                                <i class="fas fa-file-lines text-white" style="font-size:0.85rem;"></i>
-                            </div>
-                            <div>
-                                <div class="fw-semibold text-dark" style="font-size:.85rem;">New Quote</div>
-                                <div style="font-size:.72rem;color:#64748b;">Create quotation</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-6">
-                    <a href="{% url 'installations_add_view' %}" class="text-decoration-none">
-                        <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
-                             style="background:#faf5ff; border:1px solid #e9d5ff;">
-                            <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                                 style="width:40px;height:40px;background:#7c3aed;">
-                                <i class="fas fa-screwdriver-wrench text-white" style="font-size:0.85rem;"></i>
-                            </div>
-                            <div>
-                                <div class="fw-semibold text-dark" style="font-size:.85rem;">Installation</div>
-                                <div style="font-size:.72rem;color:#64748b;">Schedule job</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-6">
-                    <a href="{% url 'payments_add_view' %}" class="text-decoration-none">
-                        <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
-                             style="background:#f0fdfa; border:1px solid #99f6e4;">
-                            <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                                 style="width:40px;height:40px;background:#0f766e;">
-                                <i class="fas fa-indian-rupee-sign text-white" style="font-size:0.85rem;"></i>
-                            </div>
-                            <div>
-                                <div class="fw-semibold text-dark" style="font-size:.85rem;">Add Payment</div>
-                                <div style="font-size:.72rem;color:#64748b;">Record receipt</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-6">
-                    <a href="{% url 'tickets_add_view' %}" class="text-decoration-none">
-                        <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
-                             style="background:#fff7ed; border:1px solid #fed7aa;">
-                            <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                                 style="width:40px;height:40px;background:#ea580c;">
-                                <i class="fas fa-circle-question text-white" style="font-size:0.85rem;"></i>
-                            </div>
-                            <div>
-                                <div class="fw-semibold text-dark" style="font-size:.85rem;">New Ticket</div>
-                                <div style="font-size:.72rem;color:#64748b;">Support request</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-<div class="col-12">
-    <a href="{% url 'tasks_add_view' %}" class="text-decoration-none">
-        <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
-             style="background:#f0f9ff; border:1px solid #bae6fd;">
-            <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                 style="width:40px;height:40px;background:#0369a1;">
-                <i class="fas fa-check-circle text-white" style="font-size:0.85rem;"></i>
+    <!-- Right: Quick Actions -->
+    <div class="col-lg-6">
+        <div class="crm-card h-100">
+            <div class="crm-card-header">
+                <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
             </div>
-            <div class="flex-grow-1">
-                <div class="fw-semibold text-dark" style="font-size:.85rem;">New Task / Follow-up</div>
-                <div style="font-size:.72rem;color:#64748b;">Schedule a call, meeting or reminder</div>
-            </div>
-            <div class="d-flex gap-2 flex-shrink-0">
-                <span style="font-size:0.68rem;background:#fef2f2;color:#dc2626;
-                             border:1px solid #fecaca;
-                             padding:2px 8px;border-radius:10px;font-weight:700;">
-                    <i class="fas fa-clock me-1"></i>
-                    <span id="qa-overdue-count">{{ task_overdue }}</span> overdue
-                </span>
-                <span style="font-size:0.68rem;background:#eff6ff;color:#2563eb;
-                             border:1px solid #bfdbfe;
-                             padding:2px 8px;border-radius:10px;font-weight:700;">
-                    <i class="fas fa-calendar-day me-1"></i>
-                    <span id="qa-today-count">{{ task_today }}</span> today
-                </span>
-            </div>
-        </div>
-    </a>
-</div>
+            <div class="p-3">
+                <div class="row g-2">
+
+                    <div class="col-6">
+                        <a href="{% url 'leads_add_view' %}" class="text-decoration-none">
+                            <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
+                                 style="background:#eff6ff; border:1px solid #bfdbfe;">
+                                <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                                     style="width:40px;height:40px;background:#2563eb;">
+                                    <i class="fas fa-filter text-white" style="font-size:0.85rem;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark" style="font-size:.85rem;">New Lead</div>
+                                    <div style="font-size:.72rem;color:#64748b;">Add to pipeline</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-6">
+                        <a href="{% url 'customers_add_view' %}" class="text-decoration-none">
+                            <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
+                                 style="background:#f0fdf4; border:1px solid #bbf7d0;">
+                                <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                                     style="width:40px;height:40px;background:#15803d;">
+                                    <i class="fas fa-building-user text-white" style="font-size:0.85rem;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark" style="font-size:.85rem;">Add Customer</div>
+                                    <div style="font-size:.72rem;color:#64748b;">New account</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-6">
+                        <a href="{% url 'quotations_add_view' %}" class="text-decoration-none">
+                            <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
+                                 style="background:#fffbeb; border:1px solid #fde68a;">
+                                <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                                     style="width:40px;height:40px;background:#d97706;">
+                                    <i class="fas fa-file-lines text-white" style="font-size:0.85rem;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark" style="font-size:.85rem;">New Quote</div>
+                                    <div style="font-size:.72rem;color:#64748b;">Create quotation</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-6">
+                        <a href="{% url 'installations_add_view' %}" class="text-decoration-none">
+                            <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
+                                 style="background:#faf5ff; border:1px solid #e9d5ff;">
+                                <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                                     style="width:40px;height:40px;background:#7c3aed;">
+                                    <i class="fas fa-screwdriver-wrench text-white" style="font-size:0.85rem;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark" style="font-size:.85rem;">Installation</div>
+                                    <div style="font-size:.72rem;color:#64748b;">Schedule job</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-6">
+                        <a href="{% url 'payments_add_view' %}" class="text-decoration-none">
+                            <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
+                                 style="background:#f0fdfa; border:1px solid #99f6e4;">
+                                <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                                     style="width:40px;height:40px;background:#0f766e;">
+                                    <i class="fas fa-indian-rupee-sign text-white" style="font-size:0.85rem;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark" style="font-size:.85rem;">Add Payment</div>
+                                    <div style="font-size:.72rem;color:#64748b;">Record receipt</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-6">
+                        <a href="{% url 'tickets_add_view' %}" class="text-decoration-none">
+                            <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
+                                 style="background:#fff7ed; border:1px solid #fed7aa;">
+                                <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                                     style="width:40px;height:40px;background:#ea580c;">
+                                    <i class="fas fa-circle-question text-white" style="font-size:0.85rem;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark" style="font-size:.85rem;">New Ticket</div>
+                                    <div style="font-size:.72rem;color:#64748b;">Support request</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-12">
+                        <a href="{% url 'tasks_add_view' %}" class="text-decoration-none">
+                            <div class="qa-tile d-flex align-items-center gap-3 p-3 rounded-3"
+                                 style="background:#f0f9ff; border:1px solid #bae6fd;">
+                                <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                                     style="width:40px;height:40px;background:#0369a1;">
+                                    <i class="fas fa-check-circle text-white" style="font-size:0.85rem;"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold text-dark" style="font-size:.85rem;">
+                                        New Task / Follow-up
+                                    </div>
+                                    <div style="font-size:.72rem;color:#64748b;">
+                                        Schedule a call, meeting or reminder
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 flex-shrink-0">
+                                    <span style="font-size:0.68rem;background:#fef2f2;color:#dc2626;
+                                                 border:1px solid #fecaca;padding:2px 8px;
+                                                 border-radius:10px;font-weight:700;">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <span id="qa-overdue-count">{{ task_overdue }}</span> overdue
+                                    </span>
+                                    <span style="font-size:0.68rem;background:#eff6ff;color:#2563eb;
+                                                 border:1px solid #bfdbfe;padding:2px 8px;
+                                                 border-radius:10px;font-weight:700;">
+                                        <i class="fas fa-calendar-day me-1"></i>
+                                        <span id="qa-today-count">{{ task_today }}</span> today
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
+
 </div>
+
 <!-- ── RECENT TABLES ── -->
 <div class="row g-3">
     <div class="col-lg-6">
         <div class="crm-card">
             <div class="crm-card-header">
                 <h5>
-                    <i class="fas fa-filter"></i>
-                    Recent Leads
+                    <i class="fas fa-filter"></i> Recent Leads
                 </h5>
                 <a href="{% url 'leads_list_view' %}" class="btn btn-solar btn-sm"
                    style="padding:5px 12px;font-size:0.775rem;">View All</a>
@@ -318,9 +380,11 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="3" class="text-center py-4" style="color:#94a3b8;font-size:0.82rem;">
+                            <td colspan="3" class="text-center py-4"
+                                style="color:#94a3b8;font-size:0.82rem;">
                                 No leads yet —
-                                <a href="{% url 'leads_add_view' %}" style="color:var(--primary);">add your first</a>
+                                <a href="{% url 'leads_add_view' %}"
+                                   style="color:var(--primary);">add your first</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -334,8 +398,7 @@
         <div class="crm-card">
             <div class="crm-card-header">
                 <h5>
-                    <i class="fas fa-building-user"></i>
-                    Recent Customers
+                    <i class="fas fa-building-user"></i> Recent Customers
                 </h5>
                 <a href="{% url 'customers_list_view' %}" class="btn btn-solar btn-sm"
                    style="padding:5px 12px;font-size:0.775rem;">View All</a>
@@ -358,9 +421,11 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="3" class="text-center py-4" style="color:#94a3b8;font-size:0.82rem;">
+                            <td colspan="3" class="text-center py-4"
+                                style="color:#94a3b8;font-size:0.82rem;">
                                 No customers yet —
-                                <a href="{% url 'customers_add_view' %}" style="color:var(--primary);">add first</a>
+                                <a href="{% url 'customers_add_view' %}"
+                                   style="color:var(--primary);">add first</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -372,6 +437,7 @@
 </div>
 
 {% endblock %}
+
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -394,13 +460,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     ],
                     backgroundColor: ['#2563eb','#22c55e','#f59e0b','#a855f7','#ef4444'],
                     borderWidth: 0,
-                    hoverOffset: 6
+                    hoverOffset: 8,
+                    borderRadius: 4,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '72%',
+                cutout: '76%',
+                rotation: -90,
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -408,7 +476,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         titleColor: '#f1f5f9',
                         bodyColor: '#94a3b8',
                         padding: 10,
-                        cornerRadius: 8
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce(
+                                    function(a, b) { return a + b; }, 0
+                                );
+                                const pct = total > 0
+                                    ? Math.round((context.raw / total) * 100) : 0;
+                                return ' ' + context.raw + ' leads (' + pct + '%)';
+                            }
+                        }
                     }
                 }
             }
@@ -422,9 +500,9 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(function(json) {
                 if (!json.success) return;
                 var d = json.data;
+                var el = function(id) { return document.getElementById(id); };
 
                 // Stat cards
-                var el = function(id) { return document.getElementById(id); };
                 if (el('stat-leads'))         el('stat-leads').textContent         = d.total_leads;
                 if (el('stat-customers'))     el('stat-customers').textContent     = d.total_customers;
                 if (el('stat-quotations'))    el('stat-quotations').textContent    = d.total_quotations;
@@ -436,23 +514,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 var chart = Chart.getChart('leadsDonut');
                 if (chart) {
                     chart.data.datasets[0].data = [
-                        d.leads_new,
-                        d.leads_contacted,
-                        d.leads_qualified,
-                        d.leads_proposal,
-                        d.leads_won
+                        d.leads_new, d.leads_contacted,
+                        d.leads_qualified, d.leads_proposal, d.leads_won
                     ];
                     chart.update('none');
                 }
 
-                // Legend numbers
+                // Legend pills
                 if (el('legend-new'))       el('legend-new').textContent       = d.leads_new;
                 if (el('legend-contacted')) el('legend-contacted').textContent = d.leads_contacted;
                 if (el('legend-qualified')) el('legend-qualified').textContent = d.leads_qualified;
                 if (el('legend-proposal'))  el('legend-proposal').textContent  = d.leads_proposal;
                 if (el('legend-won'))       el('legend-won').textContent       = d.leads_won;
 
-                // Quick actions task badges
+                // Center total
+                var total = (d.leads_new || 0) + (d.leads_contacted || 0) +
+                            (d.leads_qualified || 0) + (d.leads_proposal || 0) +
+                            (d.leads_won || 0);
+                if (el('donut-total')) el('donut-total').textContent = total;
+
+                // Task badges
                 if (el('qa-overdue-count')) el('qa-overdue-count').textContent = d.task_overdue || 0;
                 if (el('qa-today-count'))   el('qa-today-count').textContent   = d.task_today   || 0;
             })
@@ -461,7 +542,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // Run immediately on load, then every 8 seconds
     refreshStats();
     setInterval(refreshStats, 8000);
 

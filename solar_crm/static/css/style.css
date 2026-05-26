@@ -992,3 +992,20 @@ body { background: var(--bg); margin: 0; padding: 0; overflow-x: hidden; }
     font-weight: 600;
     text-transform: uppercase;
 }
+/* Lead legend pills */
+.lead-legend-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: transform 0.15s;
+    cursor: default;
+}
+.lead-legend-pill:hover { transform: translateX(3px); }
+.lead-legend-num {
+    font-size: 0.85rem;
+    font-weight: 800;
+    min-width: 20px;
+    text-align: right;
+}
