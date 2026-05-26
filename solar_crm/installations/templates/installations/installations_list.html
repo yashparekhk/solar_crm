@@ -1,85 +1,91 @@
 {% extends 'base.html' %}
 {% block title %}Installations — Solar CRM{% endblock %}
+{% block breadcrumb %}Installations{% endblock %}
 
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
-      <h4 class="fw-bold mb-0" style="color:var(--secondary);">
-    <i class="fas fa-screwdriver-wrench me-2" style="color:var(--primary);"></i>Installations
-</h4>
-        <small class="text-muted">{{ total_count }} total installations</small>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-screwdriver-wrench me-2" style="color:var(--primary);"></i>Installations
+        </h4>
+        <small class="text-muted" id="installationCount">{{ total_count }} total installations</small>
     </div>
+    {% if perms_map.can_create_installation %}
     <a href="{% url 'installations_add_view' %}" class="btn btn-solar btn-sm">
         <i class="fas fa-plus"></i> New Installation
     </a>
+    {% endif %}
 </div>
 
 <div class="crm-card">
     <div class="table-responsive">
-        <table class="crm-table" style="font-size:0.82rem;">
+        <table id="installationsTable" class="crm-table w-100">
             <thead>
                 <tr>
-                    <th style="padding:8px 12px;">#</th>
-                    <th style="padding:8px 12px;">Customer</th>
-                    <th style="padding:8px 12px;">System Size</th>
-                    <th style="padding:8px 12px;">Technician</th>
-                    <th style="padding:8px 12px;">Start Date</th>
-                    <th style="padding:8px 12px;">End Date</th>
-                    <th style="padding:8px 12px;">Status</th>
-                    <th style="padding:8px 12px;">Actions</th>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>System Size</th>
+                    <th>Technician</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for installation in installations_list %}
                 <tr>
-                    <td style="padding:7px 12px;">{{ forloop.counter }}</td>
-                    <td style="padding:7px 12px;"><strong>{{ installation.customer.name }}</strong></td>
-                    <td style="padding:7px 12px;">{{ installation.system_size }} kW</td>
-                    <td style="padding:7px 12px;">{{ installation.technician|default:"—" }}</td>
-                    <td style="padding:7px 12px;" class="text-muted">
+                    <td style="color:#94a3b8;">{{ forloop.counter }}</td>
+                    <td>
+                        <a href="{% url 'installations_detail_view' installation.pk %}"
+                           style="font-weight:600;color:var(--secondary);text-decoration:none;">
+                            {{ installation.customer.name }}
+                        </a>
+                    </td>
+                    <td style="color:#64748b;">{{ installation.system_size }} kW</td>
+                    <td style="color:#64748b;">{{ installation.technician|default:"—" }}</td>
+                    <td style="color:#94a3b8;font-size:0.78rem;">
                         {{ installation.start_date|date:"d M Y" }}
                     </td>
-                    <td style="padding:7px 12px;" class="text-muted">
+                    <td style="color:#94a3b8;font-size:0.78rem;">
                         {{ installation.end_date|date:"d M Y"|default:"—" }}
                     </td>
-                    <td style="padding:7px 12px;">
+                    <td>
                         <span class="status-badge status-{{ installation.status }}"
-                              style="padding:2px 8px;font-size:0.68rem;">
+                              style="font-size:0.68rem;">
                             {{ installation.get_status_display }}
                         </span>
                     </td>
-                    <td style="padding:8px 14px;">
-    <td>
-    <div class="d-flex gap-1">
-        <a href="{% url 'installations_detail_view' installation.pk %}"
-           class="btn btn-sm"
-           style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
-           title="View">
-            <i class="fas fa-eye" style="font-size:0.72rem;"></i>
-        </a>
-        {% if perms_map.can_edit_installation %}
-        <a href="{% url 'installations_edit_view' installation.pk %}"
-           class="btn btn-sm btn-warning"
-           style="padding:3px 8px;" title="Edit">
-            <i class="fas fa-pen" style="font-size:0.72rem;"></i>
-        </a>
-        {% endif %}
-        {% if perms_map.can_delete_installation %}
-        <a href="{% url 'installations_delete_view' installation.pk %}"
-           class="btn btn-sm btn-danger"
-           style="padding:3px 8px;" title="Delete">
-            <i class="fas fa-trash" style="font-size:0.72rem;"></i>
-        </a>
-        {% endif %}
-    </div>
-</td>
-</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'installations_detail_view' installation.pk %}"
+                               class="btn btn-sm"
+                               style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
+                               title="View">
+                                <i class="fas fa-eye" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% if perms_map.can_edit_installation %}
+                            <a href="{% url 'installations_edit_view' installation.pk %}"
+                               class="btn btn-sm btn-warning"
+                               style="padding:3px 8px;" title="Edit">
+                                <i class="fas fa-pen" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% endif %}
+                            {% if perms_map.can_delete_installation %}
+                            <a href="{% url 'installations_delete_view' installation.pk %}"
+                               class="btn btn-sm btn-danger"
+                               style="padding:3px 8px;" title="Delete">
+                                <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">
-                        <i class="fas fa-tools fa-2x mb-2 d-block opacity-25"></i>
+                    <td colspan="8" class="text-center py-5" style="color:#94a3b8;">
+                        <i class="fas fa-screwdriver-wrench fa-2x mb-2 d-block" style="opacity:0.2;"></i>
                         No installations yet.
                         <a href="{% url 'installations_add_view' %}" style="color:var(--primary);">
                             Add first installation
@@ -91,4 +97,37 @@
         </table>
     </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+    $('#installationsTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5,10,25,50,-1],['5','10','25','50','All']],
+        order: [[4,'desc']],
+        columnDefs: [
+            { orderable: false, targets: [-1] },
+            { searchable: false, targets: [-1] },
+        ],
+        language: {
+            search: '',
+            searchPlaceholder: 'Search installations...',
+            lengthMenu: 'Show _MENU_ entries',
+            info: 'Showing _START_ to _END_ of _TOTAL_ installations',
+            paginate: {
+                previous: '<i class="fas fa-chevron-left"></i>',
+                next:     '<i class="fas fa-chevron-right"></i>',
+            },
+        },
+        dom: '<"dt-top-bar"lf>rt<"dt-bottom-bar"ip>',
+        drawCallback: function () {
+            const info = this.api().page.info();
+            $('#installationCount').text(info.recordsDisplay + ' total installations');
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -1,95 +1,84 @@
 {% extends 'base.html' %}
 {% block title %}Customers — Solar CRM{% endblock %}
+{% block breadcrumb %}Customers{% endblock %}
 
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
-       <h4 class="fw-bold mb-0" style="color:var(--secondary);">
-    <i class="fas fa-building-user me-2" style="color:var(--primary);"></i>Customers
-    </h4>
-        <small class="text-muted">{{ total_count }} total customers</small>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-building-user me-2" style="color:var(--primary);"></i>Customers
+        </h4>
+        <small class="text-muted" id="customerCount">{{ total_count }} total customers</small>
     </div>
+    {% if perms_map.can_create_customer %}
     <a href="{% url 'customers_add_view' %}" class="btn btn-solar btn-sm">
         <i class="fas fa-plus"></i> Add Customer
     </a>
-</div>
-
-<div class="crm-card mb-2">
-    <div class="crm-card-body py-2">
-        <form method="GET">
-            <div class="input-group input-group-sm">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="fas fa-search text-muted"></i>
-                </span>
-                <input type="text" name="q" value="{{ search_query }}"
-                    class="form-control border-start-0"
-                    placeholder="Search by name, phone, city...">
-                <button class="btn btn-solar btn-sm" type="submit">Search</button>
-                <a href="{% url 'customers_list_view' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
-            </div>
-        </form>
-    </div>
+    {% endif %}
 </div>
 
 <div class="crm-card">
     <div class="table-responsive">
-        <table class="crm-table" style="font-size:0.82rem;">
+        <table id="customersTable" class="crm-table w-100">
             <thead>
                 <tr>
-                    <th style="padding:8px 12px;">#</th>
-                    <th style="padding:8px 12px;">Name</th>
-                    <th style="padding:8px 12px;">Phone</th>
-                    <th style="padding:8px 12px;">Email</th>
-                    <th style="padding:8px 12px;">City</th>
-                    <th style="padding:8px 12px;">System Size</th>
-                    <th style="padding:8px 12px;">Date</th>
-                    <th style="padding:8px 12px;">Actions</th>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>City</th>
+                    <th>System Size</th>
+                    <th>Date</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for customer in customers_list %}
                 <tr>
-                    <td style="padding:7px 12px;">{{ forloop.counter }}</td>
-                    <td style="padding:7px 12px;"><strong>{{ customer.name }}</strong></td>
-                    <td style="padding:7px 12px;">{{ customer.phone }}</td>
-                    <td style="padding:7px 12px;">{{ customer.email|default:"—" }}</td>
-                    <td style="padding:7px 12px;">{{ customer.city }}</td>
-                    <td style="padding:7px 12px;">{{ customer.system_size }} kW</td>
-                    <td style="padding:7px 12px;" class="text-muted">
+                    <td style="color:#94a3b8;">{{ forloop.counter }}</td>
+                    <td>
+                        <a href="{% url 'customers_detail_view' customer.pk %}"
+                           style="font-weight:600;color:var(--secondary);text-decoration:none;">
+                            {{ customer.name }}
+                        </a>
+                    </td>
+                    <td style="color:#64748b;">{{ customer.phone }}</td>
+                    <td style="color:#64748b;">{{ customer.email|default:"—" }}</td>
+                    <td style="color:#64748b;">{{ customer.city }}</td>
+                    <td style="color:#64748b;">{{ customer.system_size }} kW</td>
+                    <td style="color:#94a3b8;font-size:0.78rem;">
                         {{ customer.created_at|date:"d M Y" }}
                     </td>
-                   <td style="padding:8px 14px;">
-    <td>
-    <div class="d-flex gap-1">
-        <a href="{% url 'customers_detail_view' customer.pk %}"
-           class="btn btn-sm"
-           style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
-           title="View">
-            <i class="fas fa-eye" style="font-size:0.72rem;"></i>
-        </a>
-        {% if perms_map.can_edit_customer %}
-        <a href="{% url 'customers_edit_view' customer.pk %}"
-           class="btn btn-sm btn-warning"
-           style="padding:3px 8px;" title="Edit">
-            <i class="fas fa-pen" style="font-size:0.72rem;"></i>
-        </a>
-        {% endif %}
-        {% if perms_map.can_delete_customer %}
-        <a href="{% url 'customers_delete_view' customer.pk %}"
-           class="btn btn-sm btn-danger"
-           style="padding:3px 8px;" title="Delete">
-            <i class="fas fa-trash" style="font-size:0.72rem;"></i>
-        </a>
-        {% endif %}
-    </div>
-</td>
-</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'customers_detail_view' customer.pk %}"
+                               class="btn btn-sm"
+                               style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
+                               title="View">
+                                <i class="fas fa-eye" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% if perms_map.can_edit_customer %}
+                            <a href="{% url 'customers_edit_view' customer.pk %}"
+                               class="btn btn-sm btn-warning"
+                               style="padding:3px 8px;" title="Edit">
+                                <i class="fas fa-pen" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% endif %}
+                            {% if perms_map.can_delete_customer %}
+                            <a href="{% url 'customers_delete_view' customer.pk %}"
+                               class="btn btn-sm btn-danger"
+                               style="padding:3px 8px;" title="Delete">
+                                <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">
-                        <i class="fas fa-users fa-2x mb-2 d-block opacity-25"></i>
+                    <td colspan="8" class="text-center py-5" style="color:#94a3b8;">
+                        <i class="fas fa-building-user fa-2x mb-2 d-block" style="opacity:0.2;"></i>
                         No customers yet.
                         <a href="{% url 'customers_add_view' %}" style="color:var(--primary);">
                             Add first customer
@@ -101,4 +90,37 @@
         </table>
     </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+    $('#customersTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5,10,25,50,-1],['5','10','25','50','All']],
+        order: [[6,'desc']],
+        columnDefs: [
+            { orderable: false, targets: [-1] },
+            { searchable: false, targets: [-1] },
+        ],
+        language: {
+            search: '',
+            searchPlaceholder: 'Search customers...',
+            lengthMenu: 'Show _MENU_ entries',
+            info: 'Showing _START_ to _END_ of _TOTAL_ customers',
+            paginate: {
+                previous: '<i class="fas fa-chevron-left"></i>',
+                next:     '<i class="fas fa-chevron-right"></i>',
+            },
+        },
+        dom: '<"dt-top-bar"lf>rt<"dt-bottom-bar"ip>',
+        drawCallback: function () {
+            const info = this.api().page.info();
+            $('#customerCount').text(info.recordsDisplay + ' total customers');
+        }
+    });
+});
+</script>
 {% endblock %}
