@@ -39,9 +39,9 @@ class Ticket(models.Model):
         null=True, blank=True,
         verbose_name='Assigned To'
     )
-    notes       = models.TextField(blank=True, verbose_name='Internal Notes')
-    created_at  = models.DateTimeField(auto_now_add=True)
-    updated_at  = models.DateTimeField(auto_now=True)
+    notes      = models.TextField(blank=True, verbose_name='Internal Notes')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"#{self.pk} — {self.title} ({self.get_status_display()})"
@@ -49,4 +49,24 @@ class Ticket(models.Model):
     class Meta:
         verbose_name        = 'Ticket'
         verbose_name_plural = 'Tickets'
+        ordering            = ['-created_at']
+
+
+class PublicTicket(models.Model):
+    full_name  = models.CharField(max_length=150, verbose_name='Full Name')
+    email      = models.EmailField(verbose_name='Email Address')
+    phone      = models.CharField(max_length=20, verbose_name='Phone Number')
+    category   = models.CharField(max_length=50, choices=TICKET_CATEGORY_CHOICES, default='general', verbose_name='Category')
+    subject    = models.CharField(max_length=200, verbose_name='Subject')
+    message    = models.TextField(verbose_name='Message')
+    status     = models.CharField(max_length=20, choices=TICKET_STATUS_CHOICES, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"#{self.pk} — {self.subject} ({self.full_name})"
+
+    class Meta:
+        verbose_name        = 'Public Ticket'
+        verbose_name_plural = 'Public Tickets'
         ordering            = ['-created_at']

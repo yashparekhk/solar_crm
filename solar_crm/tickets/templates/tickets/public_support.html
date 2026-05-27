@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Support — Solar CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .page-wrap {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 7px;
+      color: rgba(255,255,255,0.55); font-size: 0.78rem;
+      font-weight: 600; text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #fff; }
+
+    .support-card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #1e40af, #2563eb);
+      padding: 28px 36px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .header-icon {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; color: #fff; flex-shrink: 0;
+    }
+    .header-text-title {
+      font-size: 1.2rem; font-weight: 800;
+      color: #fff; line-height: 1.2;
+    }
+    .header-text-sub {
+      font-size: 0.75rem; color: rgba(255,255,255,0.65);
+      margin-top: 2px;
+    }
+
+    .card-body { padding: 32px 36px 36px; }
+
+    .tf-row { display: flex; gap: 14px; margin-bottom: 16px; }
+    .tf-group { flex: 1; }
+    .tf-group-full { margin-bottom: 16px; }
+
+    .tf-label {
+      display: block; font-size: 0.67rem; font-weight: 700;
+      color: #374151; margin-bottom: 5px;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .tf-label span { color: #ef4444; }
+
+    .tf-input, .tf-select, .tf-textarea {
+      width: 100%; padding: 10px 13px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 9px; font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      color: #0f172a; background: #fff;
+      transition: all 0.2s; outline: none;
+    }
+    .tf-input:focus, .tf-select:focus, .tf-textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .tf-textarea { resize: vertical; min-height: 110px; }
+
+    .tf-error-msg {
+      background: #fef2f2; border: 1px solid #fecaca;
+      color: #dc2626; border-radius: 9px;
+      padding: 11px 14px; font-size: 0.78rem;
+      margin-bottom: 16px;
+      display: none; align-items: center; gap: 8px;
+    }
+
+    .btn-submit {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 0.92rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+    .btn-submit:hover {
+      background: linear-gradient(135deg, #1e40af, #1d4ed8);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    .secure-note {
+      margin-top: 13px; text-align: center;
+      font-size: 0.67rem; color: #94a3b8;
+    }
+
+    .success-wrap {
+      padding: 48px 36px;
+      text-align: center;
+      display: none;
+    }
+    .success-icon-wrap {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: #f0fdf4; border: 2px solid #bbf7d0;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 18px;
+      font-size: 1.8rem; color: #15803d;
+    }
+    .success-title {
+      font-size: 1.3rem; font-weight: 800;
+      color: #0f172a; margin-bottom: 8px;
+    }
+    .success-sub {
+      font-size: 0.82rem; color: #64748b;
+      line-height: 1.7; margin-bottom: 24px;
+    }
+    .ticket-id-badge {
+      display: inline-block;
+      background: #eff6ff; color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      padding: 6px 18px; border-radius: 20px;
+      font-size: 0.88rem; font-weight: 700;
+      margin-bottom: 24px;
+    }
+    .btn-another {
+      padding: 10px 24px;
+      background: #eff6ff; color: #2563eb;
+      border: 1px solid #bfdbfe; border-radius: 9px;
+      font-size: 0.83rem; font-weight: 700;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all 0.2s; margin-right: 8px;
+    }
+    .btn-another:hover { background: #dbeafe; }
+    .btn-login-redirect {
+      padding: 10px 24px;
+      background: #1d4ed8; color: #fff;
+      border: none; border-radius: 9px;
+      font-size: 0.83rem; font-weight: 700;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all 0.2s; text-decoration: none;
+      display: inline-block;
+    }
+    .btn-login-redirect:hover { background: #1e40af; }
+
+    @media (max-width: 600px) {
+      .card-header { padding: 22px 20px; }
+      .card-body { padding: 24px 20px 28px; }
+      .success-wrap { padding: 36px 20px; }
+      .tf-row { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <a href="/accounts/login/" class="back-link">
+    <i class="fas fa-arrow-left"></i> Back to Login
+  </a>
+
+  <div class="support-card">
+
+    <!-- Header -->
+    <div class="card-header">
+      <div class="header-icon"><i class="fas fa-headset"></i></div>
+      <div>
+        <div class="header-text-title">Submit a Support Ticket</div>
+        <div class="header-text-sub">
+          No need to call — fill this form and our team will reach out to you promptly.
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Screen -->
+    <div class="success-wrap" id="successWrap">
+      <div class="success-icon-wrap"><i class="fas fa-check"></i></div>
+      <div class="success-title">Ticket Submitted Successfully!</div>
+      <div class="success-sub">
+        Thank you for reaching out to Solar CRM Support.<br>
+        We've sent a confirmation to your email address.<br>
+        Our team will respond within 24 business hours.
+      </div>
+      <div class="ticket-id-badge" id="successTicketId"></div>
+      <br>
+      <button class="btn-another" onclick="resetForm()">
+        <i class="fas fa-plus" style="margin-right:5px;"></i> Submit Another
+      </button>
+      <a href="/accounts/login/" class="btn-login-redirect">
+        <i class="fas fa-sign-in-alt" style="margin-right:5px;"></i> Back to Login
+      </a>
+    </div>
+
+    <!-- Form -->
+    <div class="card-body" id="formWrap">
+
+      <div class="tf-error-msg" id="errorMsg">
+        <i class="fas fa-circle-xmark"></i>
+        <span id="errorText">Something went wrong.</span>
+      </div>
+
+      <div class="tf-row">
+        <div class="tf-group">
+          <label class="tf-label">Full Name <span>*</span></label>
+          <input type="text" class="tf-input" id="tf_name"
+                 placeholder="e.g. Rajesh Shah" maxlength="150">
+        </div>
+        <div class="tf-group">
+          <label class="tf-label">Phone Number <span>*</span></label>
+          <input type="tel" class="tf-input" id="tf_phone"
+                 placeholder="e.g. 9876543210" maxlength="15">
+        </div>
+      </div>
+
+      <div class="tf-group-full">
+        <label class="tf-label">Email Address <span>*</span></label>
+        <input type="email" class="tf-input" id="tf_email"
+               placeholder="e.g. rajesh@email.com">
+      </div>
+
+      <!-- ADDED: City field -->
+      <div class="tf-group-full">
+        <label class="tf-label">City <span>*</span></label>
+        <input type="text" class="tf-input" id="tf_city"
+               placeholder="e.g. Surat" maxlength="50">
+      </div>
+
+      <div class="tf-row">
+        <div class="tf-group">
+          <label class="tf-label">Category <span>*</span></label>
+          <select class="tf-select" id="tf_category">
+            <option value="general">General Inquiry</option>
+            <option value="installation">Installation Issue</option>
+            <option value="billing">Billing Issue</option>
+            <option value="technical">Technical Support</option>
+            <option value="complaint">Complaint</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="tf-group">
+          <label class="tf-label">Subject <span>*</span></label>
+          <input type="text" class="tf-input" id="tf_subject"
+                 placeholder="Brief subject line" maxlength="200">
+        </div>
+      </div>
+
+      <div class="tf-group-full">
+        <label class="tf-label">Your Message <span>*</span></label>
+        <textarea class="tf-textarea" id="tf_message"
+                  placeholder="Describe your issue or query in detail..."></textarea>
+      </div>
+
+      <button class="btn-submit" id="submitBtn" onclick="submitTicket()">
+        <i class="fas fa-paper-plane"></i> Submit Ticket
+      </button>
+
+      <div class="secure-note">
+        <i class="fas fa-shield-halved" style="margin-right:4px;"></i>
+        Your information is secure and only used to resolve your query.
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function submitTicket() {
+    const name     = document.getElementById('tf_name').value.trim();
+    const phone    = document.getElementById('tf_phone').value.trim();
+    const email    = document.getElementById('tf_email').value.trim();
+    const city     = document.getElementById('tf_city').value.trim();
+    const category = document.getElementById('tf_category').value;
+    const subject  = document.getElementById('tf_subject').value.trim();
+    const message  = document.getElementById('tf_message').value.trim();
+    const btn      = document.getElementById('submitBtn');
+    const errBox   = document.getElementById('errorMsg');
+    const errText  = document.getElementById('errorText');
+
+    errBox.style.display = 'none';
+
+    if (!name || !phone || !email || !city || !subject || !message) {
+        errText.textContent  = 'Please fill in all required fields.';
+        errBox.style.display = 'flex';
+        return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errText.textContent  = 'Please enter a valid email address.';
+        errBox.style.display = 'flex';
+        return;
+    }
+    if (!/^[0-9]{10,15}$/.test(phone.replace(/\s/g, ''))) {
+        errText.textContent  = 'Please enter a valid phone number (10–15 digits).';
+        errBox.style.display = 'flex';
+        return;
+    }
+
+    btn.disabled  = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+    fetch('/tickets/public/submit/', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ full_name: name, phone, email, city, category, subject, message }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled  = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Ticket';
+        if (data.success) {
+            document.getElementById('successTicketId').textContent = 'Your Ticket ID: #' + data.ticket_id;
+            document.getElementById('formWrap').style.display    = 'none';
+            document.getElementById('successWrap').style.display = 'block';
+        } else {
+            errText.textContent  = data.error || 'Something went wrong. Please try again.';
+            errBox.style.display = 'flex';
+        }
+    })
+    .catch(() => {
+        btn.disabled  = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Ticket';
+        errText.textContent  = 'Network error. Please check your connection and try again.';
+        errBox.style.display = 'flex';
+    });
+}
+
+function resetForm() {
+    ['tf_name','tf_phone','tf_email','tf_city','tf_subject','tf_message'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('tf_category').value           = 'general';
+    document.getElementById('errorMsg').style.display      = 'none';
+    document.getElementById('successWrap').style.display   = 'none';
+    document.getElementById('formWrap').style.display      = 'block';
+}
+</script>
+
+</body>
+</html>

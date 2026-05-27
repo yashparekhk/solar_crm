@@ -184,24 +184,12 @@
                     <td>
                         <div class="d-flex gap-1">
 
-                            {# FIX 1: View → detail page (NOT edit) #}
                             <a href="{% url 'tasks_detail_view' task.pk %}"
                                class="btn btn-sm"
                                style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
                                title="View">
                                 <i class="fas fa-eye" style="font-size:0.72rem;"></i>
                             </a>
-
-                            {# FIX 2: complete button — CSRF via cookie, URL from data-url #}
-                            {% if task.status != 'completed' %}
-                            <button class="btn btn-sm complete-task-btn"
-                                    data-task-id="{{ task.pk }}"
-                                    data-url="{% url 'tasks_complete_api' task.pk %}"
-                                    style="padding:3px 8px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;"
-                                    title="Mark Complete">
-                                <i class="fas fa-check" style="font-size:0.72rem;"></i>
-                            </button>
-                            {% endif %}
 
                             <a href="{% url 'tasks_edit_view' task.pk %}"
                                class="btn btn-sm btn-warning"
@@ -262,44 +250,10 @@ $(document).ready(function () {
         dom: '<"dt-top-bar"lf>rt<"dt-bottom-bar"ip>',
     });
 
-    // FIX: always read CSRF from cookie — works even after DataTables re-render
     function getCsrf() {
         const match = document.cookie.match(/csrftoken=([^;]+)/);
         return match ? match[1] : '';
     }
-
-    // ── Mark complete ──
-    $(document).on('click', '.complete-task-btn', function () {
-        const btn    = $(this);
-        const taskId = btn.data('task-id');
-        const url    = btn.data('url');
-        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin" style="font-size:0.72rem;"></i>');
-
-        fetch(url, {
-            method:  'POST',
-            headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                const row = $(`#task-row-${taskId}`);
-                row.find('div[style*="font-weight"]').css({'text-decoration':'line-through','opacity':'0.5'});
-                row.find('.task-status-select').replaceWith(
-                    '<span class="status-badge status-completed" style="font-size:0.68rem;"><i class="fas fa-check me-1"></i>Completed</span>'
-                );
-                btn.remove();
-                refreshStats();
-                if (typeof showToast === 'function') showToast('Task marked as complete!', 'success');
-            } else {
-                btn.prop('disabled', false).html('<i class="fas fa-check" style="font-size:0.72rem;"></i>');
-                if (typeof showToast === 'function') showToast('Failed to update task', 'error');
-            }
-        })
-        .catch(() => {
-            btn.prop('disabled', false).html('<i class="fas fa-check" style="font-size:0.72rem;"></i>');
-            if (typeof showToast === 'function') showToast('Network error', 'error');
-        });
-    });
 
     // ── Status dropdown ──
     $(document).on('focus', '.task-status-select', function () {
@@ -326,7 +280,6 @@ $(document).ready(function () {
                 sel.dataset.prev = next;
                 if (next === 'completed') {
                     $(sel).replaceWith('<span class="status-badge status-completed" style="font-size:0.68rem;"><i class="fas fa-check me-1"></i>Completed</span>');
-                    $(`#task-row-${taskId} .complete-task-btn`).remove();
                 }
                 refreshStats();
                 if (typeof showToast === 'function') showToast('Status updated', 'success');
