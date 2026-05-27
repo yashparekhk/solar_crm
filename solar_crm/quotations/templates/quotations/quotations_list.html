@@ -1,83 +1,91 @@
 {% extends 'base.html' %}
 {% block title %}Quotations — Solar CRM{% endblock %}
+{% block breadcrumb %}Quotations{% endblock %}
 
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
         <h4 class="fw-bold mb-0" style="color:var(--secondary);">
-    <i class="fas fa-file-lines me-2" style="color:var(--primary);"></i>Quotations
-</h4>
-        <small class="text-muted">{{ total_count }} total quotations</small>
+            <i class="fas fa-file-lines me-2" style="color:var(--primary);"></i>Quotations
+        </h4>
+        <small class="text-muted" id="quotationCount">{{ total_count }} total quotations</small>
     </div>
+    {% if perms_map.can_create_quotation %}
     <a href="{% url 'quotations_add_view' %}" class="btn btn-solar btn-sm">
         <i class="fas fa-plus"></i> New Quotation
     </a>
+    {% endif %}
 </div>
 
 <div class="crm-card">
     <div class="table-responsive">
-        <table class="crm-table" style="font-size:0.82rem;">
+        <table id="quotationsTable" class="crm-table w-100">
             <thead>
                 <tr>
-                    <th style="padding:8px 12px;">#</th>
-                    <th style="padding:8px 12px;">Quote No.</th>
-                    <th style="padding:8px 12px;">Customer</th>
-                    <th style="padding:8px 12px;">System Size</th>
-                    <th style="padding:8px 12px;">Amount</th>
-                    <th style="padding:8px 12px;">Status</th>
-                    <th style="padding:8px 12px;">Date</th>
-                    <th style="padding:8px 12px;">Actions</th>
+                    <th>#</th>
+                    <th>Quote No.</th>
+                    <th>Customer</th>
+                    <th>System Size</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for quotation in quotations_list %}
                 <tr>
-                    <td style="padding:7px 12px;">{{ forloop.counter }}</td>
-                    <td style="padding:7px 12px;"><strong>{{ quotation.quotation_no }}</strong></td>
-                    <td style="padding:7px 12px;">{{ quotation.customer.name }}</td>
-                    <td style="padding:7px 12px;">{{ quotation.system_size }} kW</td>
-                    <td style="padding:7px 12px;">₹{{ quotation.total_amount }}</td>
-                    <td style="padding:7px 12px;">
+                    <td style="color:#94a3b8;">{{ forloop.counter }}</td>
+                    <td>
+                        <a href="{% url 'quotations_detail_view' quotation.pk %}"
+                           style="font-weight:600;color:var(--secondary);text-decoration:none;">
+                            {{ quotation.quotation_no }}
+                        </a>
+                    </td>
+                    <td style="color:#64748b;">{{ quotation.customer.name }}</td>
+                    <td style="color:#64748b;">{{ quotation.system_size }} kW</td>
+                    <td style="font-weight:700;color:var(--secondary);">
+                        ₹{{ quotation.total_amount }}
+                    </td>
+                    <td>
                         <span class="status-badge status-{{ quotation.status }}"
-                              style="padding:2px 8px;font-size:0.68rem;">
+                              style="font-size:0.68rem;">
                             {{ quotation.get_status_display }}
                         </span>
                     </td>
-                    <td style="padding:7px 12px;" class="text-muted">
+                    <td style="color:#94a3b8;font-size:0.78rem;">
                         {{ quotation.created_at|date:"d M Y" }}
                     </td>
-                   <td style="padding:8px 14px;">
-    <td>
-    <div class="d-flex gap-1">
-        <a href="{% url 'quotations_detail_view' quotation.pk %}"
-           class="btn btn-sm"
-           style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
-           title="View">
-            <i class="fas fa-eye" style="font-size:0.72rem;"></i>
-        </a>
-        {% if perms_map.can_edit_quotation %}
-        <a href="{% url 'quotations_edit_view' quotation.pk %}"
-           class="btn btn-sm btn-warning"
-           style="padding:3px 8px;" title="Edit">
-            <i class="fas fa-pen" style="font-size:0.72rem;"></i>
-        </a>
-        {% endif %}
-        {% if perms_map.can_delete_quotation %}
-        <a href="{% url 'quotations_delete_view' quotation.pk %}"
-           class="btn btn-sm btn-danger"
-           style="padding:3px 8px;" title="Delete">
-            <i class="fas fa-trash" style="font-size:0.72rem;"></i>
-        </a>
-        {% endif %}
-    </div>
-</td>
-</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'quotations_detail_view' quotation.pk %}"
+                               class="btn btn-sm"
+                               style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
+                               title="View">
+                                <i class="fas fa-eye" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% if perms_map.can_edit_quotation %}
+                            <a href="{% url 'quotations_edit_view' quotation.pk %}"
+                               class="btn btn-sm btn-warning"
+                               style="padding:3px 8px;" title="Edit">
+                                <i class="fas fa-pen" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% endif %}
+                            {% if perms_map.can_delete_quotation %}
+                            <a href="{% url 'quotations_delete_view' quotation.pk %}"
+                               class="btn btn-sm btn-danger"
+                               style="padding:3px 8px;" title="Delete">
+                                <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">
-                        <i class="fas fa-file-invoice fa-2x mb-2 d-block opacity-25"></i>
+                    <td colspan="8" class="text-center py-5" style="color:#94a3b8;">
+                        <i class="fas fa-file-lines fa-2x mb-2 d-block" style="opacity:0.2;"></i>
                         No quotations yet.
                         <a href="{% url 'quotations_add_view' %}" style="color:var(--primary);">
                             Create first quotation
@@ -89,4 +97,37 @@
         </table>
     </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+    $('#quotationsTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5,10,25,50,-1],['5','10','25','50','All']],
+        order: [[6,'desc']],
+        columnDefs: [
+            { orderable: false, targets: [-1] },
+            { searchable: false, targets: [-1] },
+        ],
+        language: {
+            search: '',
+            searchPlaceholder: 'Search quotations...',
+            lengthMenu: 'Show _MENU_ entries',
+            info: 'Showing _START_ to _END_ of _TOTAL_ quotations',
+            paginate: {
+                previous: '<i class="fas fa-chevron-left"></i>',
+                next:     '<i class="fas fa-chevron-right"></i>',
+            },
+        },
+        dom: '<"dt-top-bar"lf>rt<"dt-bottom-bar"ip>',
+        drawCallback: function () {
+            const info = this.api().page.info();
+            $('#quotationCount').text(info.recordsDisplay + ' total quotations');
+        }
+    });
+});
+</script>
 {% endblock %}

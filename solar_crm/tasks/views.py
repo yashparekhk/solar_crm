@@ -36,7 +36,6 @@ def tasks_list_view(request):
     perms = get_perms(request.user)
     today = timezone.now().date()
 
-    # Auto-mark overdue
     Task.objects.filter(
         due_date__lt=today,
         status__in=['pending', 'in_progress']
@@ -51,7 +50,6 @@ def tasks_list_view(request):
             assigned_to=request.user
         ).select_related('assigned_to', 'created_by', 'related_lead', 'related_customer')
 
-    # Filter tabs
     tab = request.GET.get('tab', 'all')
     if tab == 'today':
         tasks = all_tasks.filter(due_date=today)
@@ -64,7 +62,6 @@ def tasks_list_view(request):
     else:
         tasks = all_tasks
 
-    # Counts for tab badges
     counts = {
         'all':       all_tasks.count(),
         'today':     all_tasks.filter(due_date=today).count(),
@@ -81,6 +78,18 @@ def tasks_list_view(request):
         'perms_map': perms,
     }
     return render(request, 'tasks/tasks_list.html', context)
+
+
+# ── DETAIL ────────────────────────────────────────────────────────────────────
+@login_required(login_url='/accounts/login/')
+def tasks_detail_view(request, pk):          # ← ADDED
+    perms = get_perms(request.user)
+    task  = get_object_or_404(Task, pk=pk)
+    context = {
+        'task':      task,
+        'perms_map': perms,
+    }
+    return render(request, 'tasks/tasks_detail.html', context)
 
 
 # ── ADD ───────────────────────────────────────────────────────────────────────

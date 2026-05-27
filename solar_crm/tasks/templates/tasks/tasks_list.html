@@ -98,7 +98,6 @@
 
                     <td style="color:#94a3b8;">{{ forloop.counter }}</td>
 
-                    <!-- Title -->
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             <div class="task-type-icon type-{{ task.task_type }}"
@@ -127,14 +126,8 @@
                         </div>
                     </td>
 
-                    <!-- Type -->
-                    <td>
-                        <span style="font-size:0.75rem;color:#64748b;">
-                            {{ task.get_task_type_display }}
-                        </span>
-                    </td>
+                    <td><span style="font-size:0.75rem;color:#64748b;">{{ task.get_task_type_display }}</span></td>
 
-                    <!-- Priority -->
                     <td>
                         <span class="priority-badge priority-badge-{{ task.priority }}">
                             {% if task.priority == 'high' %}🔴
@@ -144,7 +137,6 @@
                         </span>
                     </td>
 
-                    <!-- Status — AJAX dropdown -->
                     <td>
                         {% if task.status != 'completed' %}
                         <select class="task-status-select status-{{ task.status }}"
@@ -162,7 +154,6 @@
                         {% endif %}
                     </td>
 
-                    <!-- Assigned to -->
                     <td>
                         <span style="font-size:0.78rem;color:#374151;font-weight:500;">
                             <i class="fas fa-user me-1" style="color:#2563eb;font-size:0.68rem;"></i>
@@ -170,7 +161,6 @@
                         </span>
                     </td>
 
-                    <!-- Related lead/customer -->
                     <td style="font-size:0.75rem;color:#64748b;">
                         {% if task.related_lead %}
                             <i class="fas fa-filter me-1" style="color:#f59e0b;"></i>{{ task.related_lead.name }}
@@ -181,7 +171,6 @@
                         {% endif %}
                     </td>
 
-                    <!-- Due date -->
                     <td style="font-size:0.78rem;">
                         <span style="color:{% if task.is_overdue %}#dc2626{% else %}#94a3b8{% endif %};">
                             {% if task.is_overdue %}<i class="fas fa-triangle-exclamation me-1"></i>{% endif %}
@@ -192,27 +181,34 @@
                         </span>
                     </td>
 
-                    <!-- Actions -->
                     <td>
                         <div class="d-flex gap-1">
-                            <!-- Mark complete -->
+
+                            {# FIX 1: View → detail page (NOT edit) #}
+                            <a href="{% url 'tasks_detail_view' task.pk %}"
+                               class="btn btn-sm"
+                               style="padding:3px 8px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;"
+                               title="View">
+                                <i class="fas fa-eye" style="font-size:0.72rem;"></i>
+                            </a>
+
+                            {# FIX 2: complete button — CSRF via cookie, URL from data-url #}
                             {% if task.status != 'completed' %}
                             <button class="btn btn-sm complete-task-btn"
                                     data-task-id="{{ task.pk }}"
+                                    data-url="{% url 'tasks_complete_api' task.pk %}"
                                     style="padding:3px 8px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;"
                                     title="Mark Complete">
                                 <i class="fas fa-check" style="font-size:0.72rem;"></i>
                             </button>
                             {% endif %}
 
-                            <!-- Edit -->
                             <a href="{% url 'tasks_edit_view' task.pk %}"
                                class="btn btn-sm btn-warning"
                                style="padding:3px 8px;" title="Edit">
                                 <i class="fas fa-pen" style="font-size:0.72rem;"></i>
                             </a>
 
-                            <!-- Delete (admin only) -->
                             {% if perms_map.is_admin %}
                             <a href="{% url 'tasks_delete_view' task.pk %}"
                                class="btn btn-sm btn-danger"
@@ -220,6 +216,7 @@
                                 <i class="fas fa-trash" style="font-size:0.72rem;"></i>
                             </a>
                             {% endif %}
+
                         </div>
                     </td>
                 </tr>
@@ -243,15 +240,14 @@
 <script>
 $(document).ready(function () {
 
-    // ── DataTable ──
     $('#tasksTable').DataTable({
         responsive: true,
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], ['5', '10', '25', '50', 'All']],
         order: [[7, 'asc']],
         columnDefs: [
-            { orderable: false, targets: [-1] },
-            { searchable: false, targets: [-1] },
+            { orderable: false, targets: [8] },
+            { searchable: false, targets: [8] },
         ],
         language: {
             search: '',
@@ -266,104 +262,100 @@ $(document).ready(function () {
         dom: '<"dt-top-bar"lf>rt<"dt-bottom-bar"ip>',
     });
 
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    // FIX: always read CSRF from cookie — works even after DataTables re-render
+    function getCsrf() {
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
 
-    // ── AJAX: Mark complete button ──
+    // ── Mark complete ──
     $(document).on('click', '.complete-task-btn', function () {
         const btn    = $(this);
         const taskId = btn.data('task-id');
-        btn.prop('disabled', true);
+        const url    = btn.data('url');
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin" style="font-size:0.72rem;"></i>');
 
-        fetch(`/tasks/${taskId}/complete/`, {
+        fetch(url, {
             method:  'POST',
-            headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' },
+            headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
         })
-        .then(res => res.json())
+        .then(r => r.json())
         .then(data => {
             if (data.success) {
                 const row = $(`#task-row-${taskId}`);
-                // Fade row and strike title
-                row.find('td:nth-child(2) div[style*="font-weight"]')
-                   .css({'text-decoration': 'line-through', 'opacity': '0.5'});
-                // Replace status dropdown with completed badge
-                row.find('.task-status-select')
-                   .replaceWith('<span class="status-badge status-completed" style="font-size:0.68rem;"><i class="fas fa-check me-1"></i>Completed</span>');
-                // Remove complete button
+                row.find('div[style*="font-weight"]').css({'text-decoration':'line-through','opacity':'0.5'});
+                row.find('.task-status-select').replaceWith(
+                    '<span class="status-badge status-completed" style="font-size:0.68rem;"><i class="fas fa-check me-1"></i>Completed</span>'
+                );
                 btn.remove();
-                // Update mini stat cards
-                refreshTaskStats();
-                showToast('Task marked as complete!', 'success');
+                refreshStats();
+                if (typeof showToast === 'function') showToast('Task marked as complete!', 'success');
             } else {
-                btn.prop('disabled', false);
-                showToast('Failed to update task', 'error');
+                btn.prop('disabled', false).html('<i class="fas fa-check" style="font-size:0.72rem;"></i>');
+                if (typeof showToast === 'function') showToast('Failed to update task', 'error');
             }
         })
         .catch(() => {
-            btn.prop('disabled', false);
-            showToast('Network error', 'error');
+            btn.prop('disabled', false).html('<i class="fas fa-check" style="font-size:0.72rem;"></i>');
+            if (typeof showToast === 'function') showToast('Network error', 'error');
         });
     });
 
-    // ── AJAX: Status dropdown change ──
-    $(document).on('change', '.task-status-select', function () {
-        const select    = this;
-        const taskId    = select.dataset.taskId;
-        const newStatus = select.value;
-        const prevStatus = select.dataset.prevStatus || select.value;
+    // ── Status dropdown ──
+    $(document).on('focus', '.task-status-select', function () {
+        this.dataset.prev = this.value;
+    });
 
-        select.disabled = true;
+    $(document).on('change', '.task-status-select', function () {
+        const sel    = this;
+        const taskId = sel.dataset.taskId;
+        const next   = sel.value;
+        const prev   = sel.dataset.prev || next;
+        sel.disabled = true;
 
         fetch(`/tasks/${taskId}/status/`, {
             method:  'POST',
-            headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ status: newStatus }),
+            headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ status: next }),
         })
-        .then(res => res.json())
+        .then(r => r.json())
         .then(data => {
-            select.disabled = false;
+            sel.disabled = false;
             if (data.success) {
-                select.className = `task-status-select status-${newStatus}`;
-                select.dataset.prevStatus = newStatus;
-                if (newStatus === 'completed') {
-                    // Replace with badge and remove complete button
-                    $(select).replaceWith('<span class="status-badge status-completed" style="font-size:0.68rem;"><i class="fas fa-check me-1"></i>Completed</span>');
+                sel.className = `task-status-select status-${next}`;
+                sel.dataset.prev = next;
+                if (next === 'completed') {
+                    $(sel).replaceWith('<span class="status-badge status-completed" style="font-size:0.68rem;"><i class="fas fa-check me-1"></i>Completed</span>');
                     $(`#task-row-${taskId} .complete-task-btn`).remove();
                 }
-                refreshTaskStats();
-                showToast('Status updated', 'success');
+                refreshStats();
+                if (typeof showToast === 'function') showToast('Status updated', 'success');
             } else {
-                select.value = prevStatus;
-                showToast('Failed to update status', 'error');
+                sel.value = prev;
+                if (typeof showToast === 'function') showToast('Failed to update status', 'error');
             }
         })
         .catch(() => {
-            select.disabled = false;
-            select.value = prevStatus;
-            showToast('Network error', 'error');
+            sel.disabled = false;
+            sel.value = prev;
         });
     });
 
-    $(document).on('focus', '.task-status-select', function () {
-        this.dataset.prevStatus = this.value;
-    });
-
-    // ── AJAX: Refresh mini stat cards ──
-    function refreshTaskStats() {
+    // ── Refresh stat cards ──
+    function refreshStats() {
         fetch("{% url 'tasks_widget_api' %}")
-            .then(res => res.json())
+            .then(r => r.json())
             .then(json => {
                 if (!json.success) return;
                 const d = json.data;
-                const el = (id) => document.getElementById(id);
-                if (el('task-stat-today'))     el('task-stat-today').textContent     = d.today;
-                if (el('task-stat-overdue'))   el('task-stat-overdue').textContent   = d.overdue;
-                if (el('task-stat-pending'))   el('task-stat-pending').textContent   = d.pending;
-                if (el('task-stat-completed')) el('task-stat-completed').textContent = d.completed;
+                ['today','overdue','pending','completed'].forEach(k => {
+                    const el = document.getElementById(`task-stat-${k}`);
+                    if (el) el.textContent = d[k];
+                });
             });
     }
 
-    // Auto-refresh stats every 30 seconds
-    setInterval(refreshTaskStats, 30000);
+    setInterval(refreshStats, 30000);
 });
 </script>
 {% endblock %}

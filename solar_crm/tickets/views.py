@@ -46,6 +46,17 @@ def tickets_list_view(request):
     return render(request, 'tickets/tickets_list.html', context)
 
 
+# ── ADDED ──
+@login_required(login_url=LOGIN_URL)
+def tickets_detail_view(request, ticket_id):
+    ticket_instance = get_object_or_404(Ticket, pk=ticket_id)
+    context = {
+        'ticket_instance': ticket_instance,
+        'page_title':      f'Ticket #{ticket_instance.pk}',
+    }
+    return render(request, 'tickets/tickets_detail.html', context)
+
+
 @login_required(login_url=LOGIN_URL)
 def tickets_add_view(request):
     customers_queryset = Customer.objects.all()
@@ -53,14 +64,14 @@ def tickets_add_view(request):
 
     if request.method == 'POST':
         new_ticket = Ticket.objects.create(
-            title       = request.POST.get('title', '').strip(),
-            customer_id = request.POST.get('customer'),
-            category    = request.POST.get('category', 'general'),
-            priority    = request.POST.get('priority', 'medium'),
-            status      = request.POST.get('status', 'open'),
-            description = request.POST.get('description', '').strip(),
+            title          = request.POST.get('title', '').strip(),
+            customer_id    = request.POST.get('customer'),
+            category       = request.POST.get('category', 'general'),
+            priority       = request.POST.get('priority', 'medium'),
+            status         = request.POST.get('status', 'open'),
+            description    = request.POST.get('description', '').strip(),
             assigned_to_id = request.POST.get('assigned_to') or None,
-            notes       = request.POST.get('notes', '').strip(),
+            notes          = request.POST.get('notes', '').strip(),
         )
         messages.success(request, f'Ticket #{new_ticket.pk} created successfully!')
         return redirect('tickets_list_view')
@@ -136,10 +147,10 @@ def export_leads_excel(request):
 
     headers = ['#', 'Name', 'Phone', 'Email', 'Source', 'Status', 'Address', 'Notes', 'Created At']
     for col_num, header in enumerate(headers, 1):
-        cell              = worksheet.cell(row=1, column=col_num, value=header)
-        cell.font         = header_font
-        cell.fill         = header_fill
-        cell.alignment    = header_align
+        cell           = worksheet.cell(row=1, column=col_num, value=header)
+        cell.font      = header_font
+        cell.fill      = header_fill
+        cell.alignment = header_align
 
     leads_data = Lead.objects.all().order_by('-created_at')
     for row_num, lead in enumerate(leads_data, 2):
@@ -164,6 +175,7 @@ def export_leads_excel(request):
     workbook.save(response)
     return response
 
+
 @login_required(login_url=LOGIN_URL)
 def import_leads_view(request):
     if request.method == 'POST' and request.FILES.get('excel_file'):
@@ -175,11 +187,9 @@ def import_leads_view(request):
             workbook  = openpyxl.load_workbook(excel_file)
             worksheet = workbook.active
 
-            # Read header row to detect column positions
-            header_row   = [str(cell.value or '').strip().lower()
-                            for cell in worksheet[1]]
+            header_row = [str(cell.value or '').strip().lower()
+                          for cell in worksheet[1]]
 
-            # Map column names to indices
             def get_col(names):
                 for name in names:
                     for i, h in enumerate(header_row):
@@ -195,7 +205,6 @@ def import_leads_view(request):
             col_address = get_col(['address'])
             col_notes   = get_col(['notes', 'note'])
 
-            # If headers not detected, use positional (A=name, B=phone...)
             if col_name is None:
                 col_name    = 0
                 col_phone   = 1
@@ -223,7 +232,6 @@ def import_leads_view(request):
                     lead_address = get_val(col_address)
                     lead_notes   = get_val(col_notes)
 
-                    # Skip empty rows
                     if not lead_name and not lead_phone:
                         continue
 
@@ -233,7 +241,7 @@ def import_leads_view(request):
                         )
                         continue
 
-                    valid_statuses = ['new','contacted','qualified','lost']
+                    valid_statuses = ['new', 'contacted', 'qualified', 'lost']
                     if lead_status not in valid_statuses:
                         lead_status = 'new'
 
@@ -270,6 +278,7 @@ def import_leads_view(request):
 
     return render(request, 'leads/leads_import.html', {'page_title': 'Import Leads'})
 
+
 # ── DOWNLOAD IMPORT TEMPLATE ──
 @login_required(login_url=LOGIN_URL)
 def download_import_template(request):
@@ -277,17 +286,16 @@ def download_import_template(request):
     worksheet = workbook.active
     worksheet.title = 'Leads Import Template'
 
-    header_font  = Font(bold=True, color='FFFFFF')
-    header_fill  = PatternFill(start_color='F59E0B', end_color='F59E0B', fill_type='solid')
+    header_font = Font(bold=True, color='FFFFFF')
+    header_fill = PatternFill(start_color='F59E0B', end_color='F59E0B', fill_type='solid')
 
     headers = ['Name *', 'Phone *', 'Email', 'Source', 'Status', 'Address', 'Notes']
     for col_num, header in enumerate(headers, 1):
-        cell       = worksheet.cell(row=1, column=col_num, value=header)
-        cell.font  = header_font
-        cell.fill  = header_fill
+        cell      = worksheet.cell(row=1, column=col_num, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
         worksheet.column_dimensions[cell.column_letter].width = 20
 
-    # Sample row
     sample_row = ['Yash Parekh', '9876543210', 'yash@gmail.com', 'Website', 'new', 'Surat, Gujarat', 'Interested in 5kW system']
     for col_num, value in enumerate(sample_row, 1):
         worksheet.cell(row=2, column=col_num, value=value)

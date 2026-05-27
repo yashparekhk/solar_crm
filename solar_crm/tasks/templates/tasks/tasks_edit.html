@@ -4,26 +4,32 @@
 
 {% block content %}
 
-<div class="mb-3">
-    <h4 class="fw-bold mb-0" style="color:var(--secondary);">
-        <i class="fas fa-pen me-2" style="color:var(--primary);"></i>Edit Task
-    </h4>
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-pen me-2" style="color:var(--primary);"></i>Edit Task
+        </h4>
+        <small class="text-muted">{{ task.title }}</small>
+    </div>
+    <a href="{% url 'tasks_list_view' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
 </div>
 
-<div class="crm-card" style="max-width:720px;">
+<div class="crm-card">  {# ← removed max-width:720px #}
     <div class="crm-card-body p-4">
         <form method="post">
             {% csrf_token %}
             <div class="row g-3">
 
                 <div class="col-12">
-                    <label class="form-label">Title *</label>
+                    <label class="form-label fw-semibold">TITLE *</label>
                     <input type="text" name="title" class="form-control"
                            value="{{ task.title }}" required>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Type</label>
+                    <label class="form-label fw-semibold">TYPE</label>
                     <select name="task_type" class="form-select">
                         <option value="call"     {% if task.task_type == 'call' %}selected{% endif %}>📞 Call Reminder</option>
                         <option value="followup" {% if task.task_type == 'followup' %}selected{% endif %}>🔄 Follow-up</option>
@@ -33,7 +39,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Priority</label>
+                    <label class="form-label fw-semibold">PRIORITY</label>
                     <select name="priority" class="form-select">
                         <option value="low"    {% if task.priority == 'low' %}selected{% endif %}>🟢 Low</option>
                         <option value="medium" {% if task.priority == 'medium' %}selected{% endif %}>🟡 Medium</option>
@@ -42,7 +48,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Status</label>
+                    <label class="form-label fw-semibold">STATUS</label>
                     <select name="status" class="form-select">
                         <option value="pending"     {% if task.status == 'pending' %}selected{% endif %}>Pending</option>
                         <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
@@ -51,7 +57,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Assign To</label>
+                    <label class="form-label fw-semibold">ASSIGN TO</label>
                     <select name="assigned_to" class="form-select">
                         {% for user in users %}
                         <option value="{{ user.pk }}"
@@ -63,19 +69,19 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Due Date</label>
+                    <label class="form-label fw-semibold">DUE DATE</label>
                     <input type="date" name="due_date" class="form-control"
                            value="{{ task.due_date|date:'Y-m-d' }}" required>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Due Time</label>
+                    <label class="form-label fw-semibold">DUE TIME</label>
                     <input type="time" name="due_time" class="form-control"
                            value="{{ task.due_time|time:'H:i'|default:'' }}">
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Related Lead</label>
+                    <label class="form-label fw-semibold">RELATED LEAD</label>
                     <select name="related_lead" class="form-select">
                         <option value="">— None —</option>
                         {% for lead in leads %}
@@ -88,7 +94,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Related Customer</label>
+                    <label class="form-label fw-semibold">RELATED CUSTOMER</label>
                     <select name="related_customer" class="form-select">
                         <option value="">— None —</option>
                         {% for customer in customers %}
@@ -101,7 +107,7 @@
                 </div>
 
                 <div class="col-12">
-                    <label class="form-label">Description</label>
+                    <label class="form-label fw-semibold">DESCRIPTION</label>
                     <textarea name="description" class="form-control"
                               rows="3">{{ task.description }}</textarea>
                 </div>
@@ -112,10 +118,12 @@
                     </button>
                     <a href="{% url 'tasks_list_view' %}"
                        class="btn"
-                       style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;padding:8px 16px;font-size:0.825rem;font-weight:600;">
+                       style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;
+                              border-radius:7px;padding:8px 16px;font-size:0.825rem;font-weight:600;">
                         Cancel
                     </a>
                 </div>
+
             </div>
         </form>
     </div>
