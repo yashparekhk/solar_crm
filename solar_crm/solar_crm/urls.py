@@ -14,6 +14,7 @@ urlpatterns = [
     path('payments/',      include('payments.urls')),
     path('tickets/',       include('tickets.urls')),
     path('tasks/',         include('tasks.urls')),
+    path('site-survey/',   include('site_survey.urls')),
     path('',               include('accounts.urls')),
 
     # ── Public support page — no login needed ──

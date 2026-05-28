@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'payments',
     'tickets',
     'tasks',
+    'site_survey',
 ]
 
 MIDDLEWARE = [

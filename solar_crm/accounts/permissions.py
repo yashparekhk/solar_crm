@@ -58,8 +58,14 @@ def get_user_permissions(user):
         'can_create_lead':    is_admin,
         'can_delete_lead':    is_admin,
         'can_assign_lead':    is_admin,
-        'can_view_all_leads': is_admin,
+        'can_view_all_leads': is_admin or is_employee,
         'can_edit_lead':      is_admin or is_employee,
+
+        # Site Survey
+'can_create_survey': is_admin or is_employee,
+'can_edit_survey':   is_admin or is_employee,
+'can_delete_survey': is_admin,
+'can_view_survey':   is_admin or is_employee,
 
         # Customers
         'can_create_customer': is_admin,
@@ -93,7 +99,7 @@ def get_user_permissions(user):
 
         # Export/Import
         'can_export': is_admin or is_employee,
-        'can_import': is_admin,
+        'can_import': is_admin or is_employee,
 
         # Role flags
         'is_admin':    is_admin,

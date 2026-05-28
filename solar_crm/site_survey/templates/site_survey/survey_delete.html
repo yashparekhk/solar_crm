@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Delete Survey{% endblock %}
+{% block breadcrumb %}Site Surveys / Delete{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="crm-card">
+            <div class="crm-card-header" style="background:#fef2f2;">
+                <h5 class="text-danger">
+                    <i class="fas fa-triangle-exclamation me-2"></i>Delete Survey
+                </h5>
+            </div>
+            <div class="crm-card-body text-center">
+                <i class="fas fa-map-location-dot fa-3x mb-3" style="color:#dc2626;opacity:0.4;"></i>
+                <p class="fw-bold">Delete site survey for:</p>
+                <p class="fs-5">
+                    <strong>{{ survey_instance.get_client_name }}</strong>
+                </p>
+                <p style="font-size:0.82rem;color:#94a3b8;">
+                    Survey date: {{ survey_instance.survey_date|date:"d M Y" }}
+                </p>
+                <p class="text-muted small">This action cannot be undone.</p>
+                <form method="POST" class="d-flex gap-2 justify-content-center mt-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="fas fa-trash me-1"></i> Yes, Delete
+                    </button>
+                    <a href="{% url 'survey_list_view' %}"
+                       class="btn btn-outline-secondary px-4">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -104,6 +104,14 @@
                     <span class="sidebar-text">Tasks</span>
                 </a>
             </li>
+            <li>
+    <a href="{% url 'survey_list_view' %}"
+       class="{% if 'site-survey' in request.path %}active{% endif %}"
+       title="Site Surveys">
+        <i class="fas fa-map-location-dot"></i>
+        <span class="sidebar-text">Site Surveys</span>
+    </a>
+</li>
 
             <!-- Data section -->
             <li class="menu-header sidebar-text">Data</li>

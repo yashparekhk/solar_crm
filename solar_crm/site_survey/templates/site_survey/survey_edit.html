@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+{% block title %}Edit Survey — Solar CRM{% endblock %}
+{% block breadcrumb %}Site Surveys / Edit{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-0" style="color:var(--secondary);">
+            <i class="fas fa-map-location-dot me-2" style="color:var(--primary);"></i>
+            Edit Survey — {{ survey_instance.get_client_name }}
+        </h4>
+        <small class="text-muted">Update site survey details</small>
+    </div>
+    <a href="{% url 'survey_detail_view' survey_instance.pk %}"
+       class="btn btn-solar btn-sm"
+       style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+</div>
+
+<form method="POST">
+{% csrf_token %}
+
+<!-- Section 1 — Basic Info -->
+<div class="crm-card mb-3">
+    <div class="crm-card-header">
+        <h5><i class="fas fa-circle-info" style="color:var(--primary);"></i> Basic Information</h5>
+    </div>
+    <div class="crm-card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Related Lead</label>
+                <select name="lead" class="form-select">
+                    <option value="">— None —</option>
+                    {% for lead in leads_list %}
+                    <option value="{{ lead.pk }}"
+                        {% if survey_instance.lead and survey_instance.lead.pk == lead.pk %}selected{% endif %}>
+                        {{ lead.name }} — {{ lead.phone }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Related Customer</label>
+                <select name="customer" class="form-select">
+                    <option value="">— None —</option>
+                    {% for customer in customers_list %}
+                    <option value="{{ customer.pk }}"
+                        {% if survey_instance.customer and survey_instance.customer.pk == customer.pk %}selected{% endif %}>
+                        {{ customer.name }} — {{ customer.city }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Surveyor</label>
+                <select name="surveyor" class="form-select">
+                    <option value="">Select surveyor</option>
+                    {% for surveyor in surveyors_list %}
+                    <option value="{{ surveyor.pk }}"
+                        {% if survey_instance.surveyor and survey_instance.surveyor.pk == surveyor.pk %}selected{% endif %}>
+                        {{ surveyor.get_full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Survey Date</label>
+                <input type="date" name="survey_date" class="form-control"
+                       value="{{ survey_instance.survey_date|date:'Y-m-d' }}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}"
+                        {% if survey_instance.status == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Feasibility</label>
+                <select name="feasibility" class="form-select">
+                    {% for value, label in feasibility_choices %}
+                    <option value="{{ value }}"
+                        {% if survey_instance.feasibility == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Site Address</label>
+                <textarea name="survey_address" class="form-control" rows="2"
+                          required>{{ survey_instance.survey_address }}</textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2 — Roof -->
+<div class="crm-card mb-3">
+    <div class="crm-card-header">
+        <h5><i class="fas fa-house-chimney" style="color:var(--primary);"></i> Roof Assessment</h5>
+    </div>
+    <div class="crm-card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Roof Type</label>
+                <select name="roof_type" class="form-select">
+                    <option value="">Select type</option>
+                    {% for value, label in roof_type_choices %}
+                    <option value="{{ value }}"
+                        {% if survey_instance.roof_type == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Roof Area (sq ft)</label>
+                <input type="number" name="roof_area_sqft" class="form-control"
+                       value="{{ survey_instance.roof_area_sqft|default:'' }}" step="0.01">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Shadow Analysis</label>
+                <select name="shadow_analysis" class="form-select">
+                    <option value="">Select</option>
+                    {% for value, label in shadow_choices %}
+                    <option value="{{ value }}"
+                        {% if survey_instance.shadow_analysis == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Roof Age (years)</label>
+                <input type="number" name="roof_age_years" class="form-control"
+                       value="{{ survey_instance.roof_age_years|default:'' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Roof Condition</label>
+                <input type="text" name="roof_condition" class="form-control"
+                       value="{{ survey_instance.roof_condition }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 3 — Electrical -->
+<div class="crm-card mb-3">
+    <div class="crm-card-header">
+        <h5><i class="fas fa-bolt" style="color:var(--primary);"></i> Electrical Details</h5>
+    </div>
+    <div class="crm-card-body">
+
+        <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;
+                    border-radius:10px;padding:14px 18px;margin-bottom:18px;">
+            <div style="font-size:0.8rem;font-weight:700;color:#1d4ed8;margin-bottom:4px;">
+                <i class="fas fa-calculator me-2"></i>Smart Auto-Calculator
+            </div>
+            <div style="font-size:0.75rem;color:#3730a3;">
+                Update the monthly bill to recalculate solar recommendations automatically.
+                You can manually override any field after calculation.
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-bold" style="color:#1d4ed8;">
+                    <i class="fas fa-file-invoice me-1"></i>
+                    Monthly Electricity Bill (₹)
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" name="monthly_bill" id="id_monthly_bill"
+                           class="form-control"
+                           value="{{ survey_instance.monthly_bill|default:'' }}"
+                           step="0.01" oninput="autoCalculate()">
+                </div>
+                <div style="font-size:0.68rem;color:#64748b;margin-top:3px;">
+                    Change bill → fields recalculate
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Existing Load (kW)</label>
+                <input type="number" name="existing_load_kw" class="form-control"
+                       value="{{ survey_instance.existing_load_kw|default:'' }}" step="0.01">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Sanctioned Load (kW)</label>
+                <input type="number" name="sanctioned_load_kw" class="form-control"
+                       value="{{ survey_instance.sanctioned_load_kw|default:'' }}" step="0.01">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    Monthly Consumption (Units)
+                    <span id="units_auto_badge" style="display:none;font-size:0.65rem;
+                          background:#dbeafe;color:#1d4ed8;padding:1px 6px;
+                          border-radius:4px;margin-left:4px;">auto</span>
+                </label>
+                <input type="number" name="monthly_units" id="id_monthly_units"
+                       class="form-control"
+                       value="{{ survey_instance.monthly_units|default:'' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Phase</label>
+                <select name="phase" class="form-select">
+                    <option value="">Select</option>
+                    {% for value, label in phase_choices %}
+                    <option value="{{ value }}"
+                        {% if survey_instance.phase == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">DISCOM</label>
+                <select name="discom" class="form-select">
+                    <option value="">Select</option>
+                    {% for value, label in discom_choices %}
+                    <option value="{{ value }}"
+                        {% if survey_instance.discom == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Meter Number</label>
+                <input type="text" name="meter_number" class="form-control"
+                       value="{{ survey_instance.meter_number }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Consumer Number</label>
+                <input type="text" name="consumer_number" class="form-control"
+                       value="{{ survey_instance.consumer_number }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 4 — Recommendation -->
+<div class="crm-card mb-3">
+    <div class="crm-card-header">
+        <h5>
+            <i class="fas fa-solar-panel" style="color:var(--primary);"></i>
+            Solar Recommendation
+            <span id="calc_badge" style="display:none;font-size:0.7rem;
+                  background:#dcfce7;color:#15803d;padding:2px 10px;
+                  border-radius:10px;margin-left:8px;font-weight:600;">
+                <i class="fas fa-check me-1"></i>Auto-calculated
+            </span>
+        </h5>
+    </div>
+    <div class="crm-card-body">
+
+        <div id="calc_summary" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;
+             border-radius:10px;padding:14px 18px;margin-bottom:18px;">
+            <div style="font-size:0.78rem;font-weight:700;color:#15803d;margin-bottom:8px;">
+                <i class="fas fa-circle-check me-2"></i>Calculation Summary
+            </div>
+            <div id="calc_summary_text" style="font-size:0.75rem;color:#166534;line-height:1.8;"></div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">
+                    Recommended Size (kW)
+                    <span id="kw_auto_badge" style="display:none;font-size:0.65rem;
+                          background:#dbeafe;color:#1d4ed8;padding:1px 6px;
+                          border-radius:4px;margin-left:4px;">auto</span>
+                </label>
+                <input type="number" name="recommended_system_kw"
+                       id="id_recommended_system_kw"
+                       class="form-control"
+                       value="{{ survey_instance.recommended_system_kw|default:'' }}"
+                       step="0.01">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    No. of Panels
+                    <span id="panels_auto_badge" style="display:none;font-size:0.65rem;
+                          background:#dbeafe;color:#1d4ed8;padding:1px 6px;
+                          border-radius:4px;margin-left:4px;">auto</span>
+                </label>
+                <input type="number" name="recommended_panels"
+                       id="id_recommended_panels"
+                       class="form-control"
+                       value="{{ survey_instance.recommended_panels|default:'' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    Est. Monthly Generation (Units)
+                    <span id="gen_auto_badge" style="display:none;font-size:0.65rem;
+                          background:#dbeafe;color:#1d4ed8;padding:1px 6px;
+                          border-radius:4px;margin-left:4px;">auto</span>
+                </label>
+                <input type="number" name="estimated_generation_units"
+                       id="id_estimated_generation_units"
+                       class="form-control"
+                       value="{{ survey_instance.estimated_generation_units|default:'' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    Estimated Subsidy (₹)
+                    <span id="subsidy_auto_badge" style="display:none;font-size:0.65rem;
+                          background:#dbeafe;color:#1d4ed8;padding:1px 6px;
+                          border-radius:4px;margin-left:4px;">auto</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" name="estimated_subsidy"
+                           id="id_estimated_subsidy"
+                           class="form-control"
+                           value="{{ survey_instance.estimated_subsidy|default:'' }}"
+                           step="0.01">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check mt-2"
+                     style="padding:12px 16px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;">
+                    <input type="checkbox" name="subsidy_eligible" id="subsidy_eligible"
+                           class="form-check-input" value="1"
+                           {% if survey_instance.subsidy_eligible %}checked{% endif %}>
+                    <label for="subsidy_eligible" class="form-check-label"
+                           style="font-weight:600;color:#15803d;font-size:0.875rem;">
+                        <i class="fas fa-indian-rupee-sign me-1"></i>
+                        Eligible for PM Surya Ghar Subsidy
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 5 — Notes -->
+<div class="crm-card mb-4">
+    <div class="crm-card-header">
+        <h5><i class="fas fa-note-sticky" style="color:var(--primary);"></i> Notes</h5>
+    </div>
+    <div class="crm-card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Site Observations</label>
+                <textarea name="observations" class="form-control"
+                          rows="3">{{ survey_instance.observations }}</textarea>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Recommendations</label>
+                <textarea name="recommendations" class="form-control"
+                          rows="3">{{ survey_instance.recommendations }}</textarea>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Internal Notes</label>
+                <textarea name="internal_notes" class="form-control"
+                          rows="3">{{ survey_instance.internal_notes }}</textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex gap-2">
+    <button type="submit" class="btn btn-solar px-4">
+        <i class="fas fa-save me-1"></i> Update Survey
+    </button>
+    <a href="{% url 'survey_detail_view' survey_instance.pk %}"
+       class="btn btn-solar px-4"
+       style="background:#f8fafc;color:#374151 !important;border:1px solid #e2e8f0;">
+        Cancel
+    </a>
+</div>
+
+</form>
+
+<script>
+const RATE_PER_UNIT    = 6.0;
+const PANEL_KW         = 0.54;
+const GEN_PER_KW_MONTH = 124;
+
+function calcSubsidy(kw) {
+    if (kw <= 0) return 0;
+    if (kw <= 2) return Math.round(kw * 30000);
+    if (kw <= 3) return 60000 + Math.round((kw - 2) * 18000);
+    return 78000;
+}
+
+function autoCalculate() {
+    const bill = parseFloat(document.getElementById('id_monthly_bill').value);
+    if (!bill || bill <= 0) return;
+
+    const units     = Math.round(bill / RATE_PER_UNIT);
+    const rawKw     = (units * 0.90) / GEN_PER_KW_MONTH;
+    const systemKw  = Math.round(rawKw * 2) / 2;
+    const finalKw   = Math.max(1, systemKw);
+    const panels    = Math.ceil(finalKw / PANEL_KW);
+    const generation = Math.round(finalKw * GEN_PER_KW_MONTH);
+    const subsidy   = calcSubsidy(finalKw);
+
+    document.getElementById('id_monthly_units').value              = units;
+    document.getElementById('id_recommended_system_kw').value      = finalKw.toFixed(2);
+    document.getElementById('id_recommended_panels').value         = panels;
+    document.getElementById('id_estimated_generation_units').value = generation;
+    document.getElementById('id_estimated_subsidy').value          = subsidy;
+
+    if (finalKw <= 10) {
+        document.getElementById('subsidy_eligible').checked = true;
+    }
+
+    ['units_auto_badge','kw_auto_badge','panels_auto_badge',
+     'gen_auto_badge','subsidy_auto_badge'].forEach(id => {
+        document.getElementById(id).style.display = 'inline';
+    });
+
+    document.getElementById('calc_badge').style.display   = 'inline';
+    document.getElementById('calc_summary').style.display = 'block';
+    document.getElementById('calc_summary_text').innerHTML =
+        `📊 Monthly bill ₹${bill.toLocaleString()} ÷ ₹${RATE_PER_UNIT}/unit = <strong>${units} units/month</strong><br>` +
+        `⚡ Required capacity = ${units} × 90% ÷ ${GEN_PER_KW_MONTH} units/kW = <strong>${finalKw} kW system</strong><br>` +
+        `🔲 Panels = ${finalKw} kW ÷ ${PANEL_KW} kW per panel = <strong>${panels} panels (540W each)</strong><br>` +
+        `☀️ Est. generation = ${finalKw} kW × ${GEN_PER_KW_MONTH} units/kW/month = <strong>${generation} units/month</strong><br>` +
+        `💰 PM Surya Ghar Subsidy = <strong>₹${subsidy.toLocaleString()}</strong>` +
+        (finalKw > 3 ? ' (capped at ₹78,000 for >3 kW)' : '');
+}
+</script>
+
+{% endblock %}
